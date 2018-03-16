@@ -41,7 +41,11 @@ void alien_init_loadfile(char *filename) {
 
 void alien_init_program_headers() {
     program_headers = malloc(sizeof(Elf64_Phdr*) * elf_header->e_phnum);
-    // TODO(mwarzynski): handle malloc error. :(
+    if (program_headers == NULL) {
+        // malloc failed to allocate memory
+        fputs("init_program_headers: could not allocate memory.\n", stderr);
+        exit(127);
+    }
 
     Elf64_Off offset = elf_header->e_phoff;
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
@@ -51,7 +55,11 @@ void alien_init_program_headers() {
 
 void alien_init_section_headers() {
     section_headers = malloc(sizeof(Elf64_Shdr*) * elf_header->e_shnum);
-    // TODO(mwarzynski): handle malloc error. :(
+    if (section_headers == NULL) {
+        // malloc failed to allocate memory
+        fputs("init_section_headers: could not allocate memory.\n", stderr);
+        exit(127);
+    }
 
     Elf64_Off offset = elf_header->e_shoff;
     for (size_t i = 0; i < elf_header->e_shnum; i++) {
