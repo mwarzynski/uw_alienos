@@ -114,8 +114,19 @@ void alien_init_parse_elf() {
     }
 }
 
-int alien_init_parse_params() {
-    return 0;
+Elf64_Xword alien_init_parse_params() {
+    parameters_header = NULL;
+    for (size_t i = 0; i < elf_header->e_phnum; i++) {
+        if (program_headers[i]->p_type == PT_PARAMS) {
+            parameters_header = program_headers[i];
+            break;
+        }
+    }
+    if (parameters_header == NULL) {
+        return 0;
+    }
+
+    return parameters_header->p_memsz / 4;
 }
 
 int alien_init(int argc, char *argv[]) {
@@ -136,9 +147,10 @@ int alien_init(int argc, char *argv[]) {
     // ELF header - parse section header entries.
     alien_init_section_headers();
 
-    int params = alien_init_parse_params();
+    Elf64_Xword params = alien_init_parse_params();
     if (argc - 2 != params) {
-        fputs("init: You provided invalid number of params.\n", stderr);
+        printf("You should provide %ld param(s).\n", params);
+        fputs("init: Got invalid number of params.\n", stderr);
         free(file);
         exit(127);
     }

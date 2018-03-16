@@ -41,6 +41,8 @@ Elf64_Phdr **program_headers;
 Elf64_Shdr **section_headers;
 // len: elf_header->e_shnum
 
+// Program header of type PT_PARAMS.
+Elf64_Phdr *parameters_header;
 
 // Load file and accordingly parse ELF structures.
 // Also, check parameters.
