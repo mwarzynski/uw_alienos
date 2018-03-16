@@ -24,15 +24,23 @@
 // If the program does not have such a segment, it means that it does not accept parameters.
 #define PT_PARAMS 0x60031337
 
+
+// Pointer to the beginning of loaded file.
 uint8_t *file;
+// Size of loaded file (in bytes).
 long file_size;
 
+// Pointer to file ELF header.
 Elf64_Ehdr *elf_header;
 
-Elf64_Addr entrypoint;
-
+// Pointers to program headers.
 Elf64_Phdr **program_headers;
+// len: elf_header->e_phnum
+
+// Pointers to section headers.
 Elf64_Shdr **section_headers;
+// len: elf_header->e_shnum
+
 
 // Load file and accordingly parse ELF structures.
 // Also, check parameters.

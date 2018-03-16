@@ -112,9 +112,6 @@ void alien_init_parse_elf() {
         fputs("init_parse_elf: ELF header - invalid version.\n", stderr);
         exit(127);
     }
-
-    // ELF header - parse entrypoint.
-    entrypoint = elf_header->e_entry;
 }
 
 int alien_init_parse_params() {
