@@ -114,6 +114,11 @@ int alien_init_parse_params() {
 }
 
 int alien_init(int argc, char *argv[]) {
+    if (argc < 2) {
+        fputs("init: You must specify program to execute.\n", stderr);
+        exit(127);
+    }
+
     // Load file content to memory.
     alien_init_loadfile(argv[1]);
 
