@@ -1,4 +1,4 @@
-#include "init.h"
+#include "alienos.h"
 
 
 void alien_init_loadfile(char *filename) {
@@ -129,7 +129,7 @@ Elf64_Xword alien_init_parse_params() {
     return parameters_header->p_memsz / 4;
 }
 
-int alien_init(int argc, char *argv[]) {
+void alien_init(int argc, char *argv[]) {
     if (argc < 2) {
         fputs("init: You must specify program to execute.\n", stderr);
         exit(127);
@@ -154,6 +154,4 @@ int alien_init(int argc, char *argv[]) {
         free(file);
         exit(127);
     }
-
-    return 0;
 }

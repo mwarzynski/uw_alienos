@@ -47,6 +47,6 @@ Elf64_Phdr *parameters_header;
 // Load file and accordingly parse ELF structures.
 // Also, check parameters.
 // If any error occurs, alien_init will return 127.
-int alien_init(int argc, char *argv[]);
+void alien_init(int argc, char *argv[]);
 
 #endif // _ALIENOS_H
