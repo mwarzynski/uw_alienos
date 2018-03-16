@@ -1,4 +1,9 @@
 
+#ifndef _SYSCALL_H
+#define _SYSCALL_H 1
+
+#include "alienos.h"
+
 // Syscall hints:
 // The number of the system call is passed in the register rax.
 // The return value from the call is also in the register rax,
@@ -23,3 +28,4 @@
 // void setcursor(int x, int y)
 //                rdi  , rsi
 
+#endif // _SYSCALL_H

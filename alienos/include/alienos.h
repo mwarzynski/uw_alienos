@@ -1,4 +1,13 @@
 
+#ifndef _ALIENOS_H
+#define _ALIENOS_H 1
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#include <elf.h>
+
 // Key presses representation as numbers.
 // Range for ASCII: 0x20 - 0x7e.
 #define KEY_UP 0x80
@@ -15,5 +24,19 @@
 // If the program does not have such a segment, it means that it does not accept parameters.
 #define PT_PARAMS 0x60031337
 
+uint8_t *file;
+long file_size;
+
+Elf64_Ehdr *elf_header;
+
+Elf64_Addr entrypoint;
+
+Elf64_Phdr **program_headers;
+Elf64_Shdr **section_headers;
+
+// Load file and accordingly parse ELF structures.
+// Also, check parameters.
+// If any error occurs, alien_init will return 127.
 int alien_init(int argc, char *argv[]);
 
+#endif // _ALIENOS_H
