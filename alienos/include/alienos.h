@@ -15,3 +15,5 @@
 // If the program does not have such a segment, it means that it does not accept parameters.
 #define PT_PARAMS 0x60031337
 
+int alien_init(int argc, char *argv[]);
+
