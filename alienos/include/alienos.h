@@ -2,9 +2,13 @@
 #ifndef _ALIENOS_H
 #define _ALIENOS_H 1
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
+
+#include <sys/mman.h>
 
 #include <elf.h>
 
@@ -24,7 +28,8 @@
 // If the program does not have such a segment, it means that it does not accept parameters.
 #define PT_PARAMS 0x60031337
 
-
+// Descriptor to emulated program.
+FILE *fp;
 // Pointer to the beginning of loaded file.
 uint8_t *file;
 // Size of loaded file (in bytes).

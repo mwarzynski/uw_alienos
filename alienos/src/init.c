@@ -4,7 +4,7 @@
 void alien_init_loadfile(char *filename) {
     file = NULL;
 
-    FILE *fp = fopen(filename, "r");
+    fp = fopen(filename, "rwx");
     if (fp == NULL) {
         fputs("init_loadfile: File descriptor is NULL.\n", stderr);
         exit(127);
@@ -35,8 +35,6 @@ void alien_init_loadfile(char *filename) {
     }
 
     file[len++] = '\0';
-
-    fclose(fp);
 }
 
 void alien_init_program_headers() {
@@ -114,19 +112,64 @@ void alien_init_parse_elf() {
     }
 }
 
-Elf64_Xword alien_init_parse_params() {
+void alien_init_params(int argc, char *argv[]) {
     parameters_header = NULL;
+
+    // Determine parameters header.
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
         if (program_headers[i]->p_type == PT_PARAMS) {
             parameters_header = program_headers[i];
             break;
         }
     }
-    if (parameters_header == NULL) {
-        return 0;
+
+    // Evaluate number of parameters.
+    Elf64_Xword paramsn = 0;
+    if (parameters_header != NULL) {
+        paramsn = parameters_header->p_memsz / 4;
     }
 
-    return parameters_header->p_memsz / 4;
+    if (argc - 2 != paramsn) {
+        fprintf(stderr, "init_params: invalid number of parameters (want: %d).\n", paramsn);
+        exit(127);
+    }
+
+    // Fill parameters into the block.
+    int *param;
+    for (Elf64_Xword i = 0; i < paramsn; i++) {
+        param = (int*)(parameters_header->p_paddr + 4*i);
+        *param = atoi(argv[2 + i]);
+    }
+}
+
+void alien_init_load() {
+    Elf64_Phdr *h;
+    Elf64_Addr paddr, offaddr, len;
+    void *mmap_ret;
+    for (size_t i = 0; i < elf_header->e_phnum; i++) {
+        h = program_headers[i];
+
+        if (h->p_type != PT_LOAD) {
+            continue;
+        }
+
+        paddr = h->p_paddr & ~0xfff;
+        offaddr = h->p_offset & ~0xfff;
+        len = (h->p_memsz & ~0xfff) + 0x1000;
+
+        mmap_ret = mmap(
+          (void*)paddr,                // void *addr
+                len,                   // size_t len
+                h->p_flags,            // int prot
+                MAP_FIXED|MAP_PRIVATE, // int flags
+                fileno(fp),            // int fildes
+                offaddr                // off_t off
+        );
+
+        if (mmap_ret == MAP_FAILED) {
+            fprintf(stderr, "init_load: mmap: %s\n", strerror(errno));
+        }
+    }
 }
 
 void alien_init(int argc, char *argv[]) {
@@ -147,11 +190,9 @@ void alien_init(int argc, char *argv[]) {
     // ELF header - parse section header entries.
     alien_init_section_headers();
 
-    Elf64_Xword params = alien_init_parse_params();
-    if (argc - 2 != params) {
-        printf("You should provide %ld param(s).\n", params);
-        fputs("init: Got invalid number of params.\n", stderr);
-        free(file);
-        exit(127);
-    }
+    // Init sections into virtual memory.
+    alien_init_load();
+
+    // Initialize parameters in virtual memory.
+    alien_init_params(argc, argv);
 }
