@@ -6,4 +6,4 @@ project (alienos)
 include_directories("include")
  
 # Add the executable.
-add_executable(emu src/emu.c src/init.c)
+add_executable(emu src/emu.c src/init.c src/exec.c)

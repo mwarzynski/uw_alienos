@@ -1,4 +1,3 @@
-
 #ifndef _ALIENOS_H
 #define _ALIENOS_H 1
 
@@ -7,8 +6,15 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
+
+#include <asm/ptrace-abi.h>
 
 #include <sys/mman.h>
+#include <sys/ptrace.h>
+#include <sys/syscall.h>
+#include <sys/wait.h>
+#include <sys/user.h>
 
 #include <elf.h>
 
@@ -49,9 +55,22 @@ Elf64_Shdr **section_headers;
 // Program header of type PT_PARAMS.
 Elf64_Phdr *parameters_header;
 
+
+// Child PID.
+pid_t child;
+
+
 // Load file and accordingly parse ELF structures.
 // Also, check parameters.
 // If any error occurs, alien_init will return 127.
 void alien_init(int argc, char *argv[]);
+
+// Execute given program.
+// Also, sets up ptrace.
+void alien_exec();
+
+// Emulate AlienOS.
+// Mainly, provide syscalls implementation and terminal interface.
+void alien_emulate();
 
 #endif // _ALIENOS_H
