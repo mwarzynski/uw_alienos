@@ -10,10 +10,5 @@ int main(int argc, char *argv[]) {
     // emulated program computational power.
     alien_exec();
 
-    // alien_emulate provides AlienOS system calls
-    // implementation as to provide adequate environment
-    // for emulated code.
-    alien_emulate();
-
     return 0;
 }
