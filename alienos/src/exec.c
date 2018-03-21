@@ -1,5 +1,10 @@
 #include "alienos.h"
 
+// TODO(mwarzynski): signals handler
+void alien_exec_signal_handler(int signum) {
+    kill(child, signum);
+}
+
 void alien_exec() {
     child = fork();
     if (child == -1) {
