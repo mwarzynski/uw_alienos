@@ -1,11 +1,16 @@
 #include "alienos.h"
 
-// TODO(mwarzynski): signals handler
-void alien_exec_signal_handler(int signum) {
-    kill(child, signum);
+void alien_disable_io_buffer() {
+    struct termios t;
+	tcgetattr(STDIN_FILENO, &t);
+    t.c_lflag &= (~ICANON & ~ECHO);
+	tcsetattr(STDIN_FILENO,TCSANOW, &t);
 }
 
 void alien_exec() {
+    alien_setup_signal_handler();
+    alien_disable_io_buffer();
+
     child = fork();
     if (child == -1) {
         goto error;

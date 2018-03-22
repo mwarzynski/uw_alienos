@@ -157,6 +157,8 @@ void alien_init_load() {
         offaddr = h->p_offset & ~0xfff;
         len = (h->p_memsz & ~0xfff) + 0x1000;
 
+        printf("%08x\n", h->p_flags);
+
         mmap_ret = mmap(
           (void*)paddr,                // void *addr
                 len,                   // size_t len
@@ -170,6 +172,18 @@ void alien_init_load() {
             fprintf(stderr, "init_load: mmap: %s\n", strerror(errno));
         }
     }
+}
+
+void alien_init_memory_prepare() {
+    // TODO: implement setting unused memory to zero
+    // It's due to mapping with alignment which causes
+    // loading more bytes from file than needed.
+    // Especially, overwriting BSS section might not be
+    // something we want.
+}
+
+void alien_init_cleanup() {
+    // TODO: implement cleaning up after initialization
 }
 
 void alien_init(int argc, char *argv[]) {
@@ -195,4 +209,8 @@ void alien_init(int argc, char *argv[]) {
 
     // Initialize parameters in virtual memory.
     alien_init_params(argc, argv);
+
+    // Prepare the memory.
+    // Well, memset zero.
+    alien_init_memory_prepare();
 }

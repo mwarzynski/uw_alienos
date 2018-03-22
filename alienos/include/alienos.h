@@ -7,12 +7,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <termios.h>
 #include <unistd.h>
 
 #include <sys/mman.h>
 #include <sys/ptrace.h>
 #include <sys/syscall.h>
 #include <sys/wait.h>
+#include <sys/uio.h>
 #include <sys/user.h>
 #include <sys/random.h>
 
@@ -90,10 +92,18 @@ pid_t child;
 typedef struct user_regs_struct registers;
 
 
+// Terminal functions
+void alien_terminal_goto(int x, int y);
+void alien_terminal_show(char *s, int n);
+
+void alien_setup_signal_handler();
+
 // Load file and accordingly parse ELF structures.
 // Also, check parameters.
 // If any error occurs, alien_init will return 127.
 void alien_init(int argc, char *argv[]);
+// Clean up the memory.
+void alien_init_cleanup();
 
 // Emulate AlienOS syscalls.
 // It modifies registers which later should be set
@@ -103,5 +113,8 @@ int alien_emulate(registers *regs);
 // Execute given program.
 // Also, sets up ptrace.
 void alien_exec();
+
+// Exit the alien program 'gracefully' (SIGKILL).
+void alien_exit(int code);
 
 #endif // _ALIENOS_H

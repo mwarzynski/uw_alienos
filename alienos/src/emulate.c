@@ -15,17 +15,40 @@ int alien_emulate_getrand(registers *regs) {
 }
 
 int alien_emulate_getkey(registers *regs) {
-    fprintf(stderr, "alien_getkey: providing key: %x\n");
+    char c = getchar();
+    fprintf(stderr, "alien_getkey: providing key: %x\n", c);
+    regs->rax = c;
     return 0;
 }
 
 int alien_emulate_print(registers *regs) {
     int x = regs->rdi;
     int y = regs->rsi;
-    uint64_t chars_addr = regs->rdx;
+    uint16_t chars_addr = (uint16_t)regs->rdx;
     int n = regs->r10;
 
-    fprintf(stderr, "alien_print: printing on (%d,%d) (%d chars)\n", x, y, n);
+    // returns the number of bytes read
+    ssize_t bytes_read = 0;
+    ssize_t br;
+
+    struct iovec local_iov, remote_iov;
+
+    while (bytes_read < n) {
+        br = process_vm_readv(child,
+                            const struct iovec *local_iov,
+                            unsigned long liovcnt,
+                            const struct iovec *remote_iov,
+                            unsigned long riovcnt,
+                            unsigned long flags);
+        if (br == -1) {
+            // -1 is returned and errno is set appropriately.
+            alien_exit(127);
+        }
+    }
+
+    fprintf(stderr, "alien_print: printing on (%d,%d) (%d chars) from %08x\n", x, y, n, regs->rdx);
+    //alien_terminal_goto(x, y);
+    //alien_terminal_show(s, n);
     return 0;
 }
 
@@ -33,7 +56,7 @@ int alien_emulate_setcursor(registers *regs) {
     int x = regs->rdi;
     int y = regs->rsi;
 
-    fprintf(stderr, "alien_setcursor: set cursor to (%d,%d)\n", x, y);
+    alien_terminal_goto(x, y);
     return 0;
 }
 
