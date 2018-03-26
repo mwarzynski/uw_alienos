@@ -1,118 +1,126 @@
 #include "alienos.h"
 
 
-void alien_init_loadfile(char *filename) {
+int alien_init_loadfile(char *filename) {
     file = NULL;
 
     fp = fopen(filename, "rwx");
     if (fp == NULL) {
-        fputs("init_loadfile: File descriptor is NULL.\n", stderr);
-        exit(127);
+        perror("init_loadfile: File descriptor is NULL.");
+        return 1;
     }
 
     if (fseek(fp, 0L, SEEK_END) != 0) {
-        fputs("init_loadfile: Seeking to the end of file error.\n", stderr);
-        exit(127);
+        perror("init_loadfile: Seeking to the end of file error.");
+        return 1;
     }
 
     file_size = ftell(fp);
     if (file_size == -1) {
-        fputs("init_loadfile: Could not determine file size.\n", stderr);
-        exit(127);
+        perror("init_loadfile: Could not determine file size.");
+        return 1;
     }
 
     file = malloc(sizeof(char) * (file_size + 1));
 
     if (fseek(fp, 0L, SEEK_SET) != 0) {
-        fputs("init_loadfile: Could not seek to the file beggining.\n", stderr);
-        exit(127);
+        perror("init_loadfile: Could not seek to the file beggining.");
+        return 1;
     }
 
     size_t len = fread(file, sizeof(char), file_size, fp);
     if (ferror(fp) != 0 ) {
-        fputs("init_loadfile: Error reading file.\n", stderr);
-        exit(127);
+        perror("init_loadfile: Error reading file.");
+        return 1;
     }
 
     file[len++] = '\0';
+
+    return 0;
 }
 
-void alien_init_program_headers() {
+int alien_init_program_headers() {
     program_headers = malloc(sizeof(Elf64_Phdr*) * elf_header->e_phnum);
     if (program_headers == NULL) {
         // malloc failed to allocate memory
-        fputs("init_program_headers: could not allocate memory.\n", stderr);
-        exit(127);
+        perror("could not allocate memory");
+        return 1;
     }
 
     Elf64_Off offset = elf_header->e_phoff;
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
         program_headers[i] = (Elf64_Phdr*)(file + offset + i*(elf_header->e_phentsize));
     }
+
+    return 0;
 }
 
-void alien_init_section_headers() {
+int alien_init_section_headers() {
     section_headers = malloc(sizeof(Elf64_Shdr*) * elf_header->e_shnum);
     if (section_headers == NULL) {
         // malloc failed to allocate memory
-        fputs("init_section_headers: could not allocate memory.\n", stderr);
-        exit(127);
+        perror("could not allocate memory");
+        return 1;
     }
 
     Elf64_Off offset = elf_header->e_shoff;
     for (size_t i = 0; i < elf_header->e_shnum; i++) {
         section_headers[i] = (Elf64_Shdr*)(file + offset + i*(elf_header->e_shentsize));
     }
+
+    return 0;
 }
 
-void alien_init_parse_elf() {
+int alien_init_parse_elf() {
     // ELF header - for 64-bit architecture is 64 bytes long.
     if (file_size < 64) {
-        fputs("init_parse_elf: It's not an ELF file.\n", stderr);
-        exit(127);
+        perror("It's not an ELF file.");
+        return 1;
     }
 
     elf_header = (Elf64_Ehdr*)file;
 
     for (size_t i = 0; i < SELFMAG; i++) {
         if (file[i] != elf_header->e_ident[i]) {
-            fputs("init_parse_elf: ELF header - invalid magic number.\n", stderr);
-            exit(127);
+            perror("ELF header: invalid magic number.");
+            return 1;
         }
     }
 
     // ELF header - check architecture.
     if (elf_header->e_type != ELFCLASS64) {
-        fputs("init_parse_elf: ELF header - not a 64-bit format.\n", stderr);
-        exit(127);
+        perror("ELF header - not 64-bit format.");
+        return 1;
     }
 
     // ELF header - check file type.
     if (elf_header->e_type != ET_EXEC) {
-        fputs("init_parse_elf: ELF header - invalid type of file.\n", stderr);
-        exit(127);
+        perror("ELF header - invalid type of file");
+        return 1;
     }
 
     // ELF header - check endianess.
     if ((elf_header->e_machine >> EI_DATA) != ELFDATA2LSB) {
-        fputs("init_parse_elf: ELF header - not a little-endian.\n", stderr);
-        exit(127);
+        perror("ELF header - not a little-endian");
+        return 1;
     }
 
     // ELF header - check architecture.
     if (elf_header->e_machine != EM_X86_64) {
-        fputs("init_parse_elf: ELF header - invalid architecture\n", stderr);
-        exit(127);
+        perror("ELF header -invalid architecture");
+        return 1;
     }
 
     // ELF header - check version.
     if (elf_header->e_version != EV_CURRENT) {
-        fputs("init_parse_elf: ELF header - invalid version.\n", stderr);
-        exit(127);
+        perror("ELF header - invalid version");
+        return 1;
     }
+
+    return 0;
 }
 
-void alien_init_params(int argc, char *argv[]) {
+int alien_init_params(int argc, char *argv[]) {
     parameters_header = NULL;
 
     // Determine parameters header.
@@ -130,8 +138,8 @@ void alien_init_params(int argc, char *argv[]) {
     }
 
     if (argc - 2 != paramsn) {
-        fprintf(stderr, "init_params: invalid number of parameters (want: %d).\n", paramsn);
-        exit(127);
+        perror("Invalid number of params");
+        return 1;
     }
 
     // Fill parameters into the block.
@@ -140,9 +148,11 @@ void alien_init_params(int argc, char *argv[]) {
         param = (int*)(parameters_header->p_paddr + 4*i);
         *param = atoi(argv[2 + i]);
     }
+
+    return 0;
 }
 
-void alien_init_load() {
+int alien_init_load() {
     Elf64_Phdr *h;
     Elf64_Addr paddr, offaddr, len;
     void *mmap_ret;
@@ -157,29 +167,44 @@ void alien_init_load() {
         offaddr = h->p_offset & ~0xfff;
         len = (h->p_memsz & ~0xfff) + 0x1000;
 
-        printf("%08x\n", h->p_flags);
+        // Parse prot values.
+        int prot = 0;
+        if (h->p_flags & PF_X) {
+            prot = prot | PROT_EXEC;
+        }
+        if (h->p_flags & PF_R) {
+            prot = prot | PROT_READ;
+        }
+        if (h->p_flags & PF_W) {
+            prot = prot | PROT_WRITE;
+        }
 
         mmap_ret = mmap(
           (void*)paddr,                // void *addr
                 len,                   // size_t len
-                h->p_flags,            // int prot
+                prot,                  // int prot
                 MAP_FIXED|MAP_PRIVATE, // int flags
                 fileno(fp),            // int fildes
                 offaddr                // off_t off
         );
 
         if (mmap_ret == MAP_FAILED) {
-            fprintf(stderr, "init_load: mmap: %s\n", strerror(errno));
+            // errno is set by mmap
+            return 1;
         }
     }
+
+    return 0;
 }
 
-void alien_init_memory_prepare() {
+int alien_init_memory_prepare() {
     // TODO: implement setting unused memory to zero
     // It's due to mapping with alignment which causes
     // loading more bytes from file than needed.
     // Especially, overwriting BSS section might not be
     // something we want.
+
+    return 0;
 }
 
 void alien_init_cleanup() {
@@ -188,29 +213,49 @@ void alien_init_cleanup() {
 
 void alien_init(int argc, char *argv[]) {
     if (argc < 2) {
-        fputs("init: You must specify program to execute.\n", stderr);
-        exit(127);
+        perror("You must specify program to execute");
+        goto error;
     }
 
     // Load file content to memory.
-    alien_init_loadfile(argv[1]);
+    if (alien_init_loadfile(argv[1]) != 0) {
+        goto error;
+    }
 
     // Parse ELF header file.
-    alien_init_parse_elf();
+    if (alien_init_parse_elf() != 0) {
+        goto error;
+    }
 
     // Parse program headers.
-    alien_init_program_headers();
+    if (alien_init_program_headers() != 0) {
+        goto error;
+    }
 
     // ELF header - parse section header entries.
-    alien_init_section_headers();
+    if (alien_init_section_headers() != 0) {
+        goto error;
+    }
 
     // Init sections into virtual memory.
-    alien_init_load();
+    if (alien_init_load() != 0) {
+        goto error;
+    }
 
     // Initialize parameters in virtual memory.
-    alien_init_params(argc, argv);
+    if (alien_init_params(argc, argv) != 0) {
+        goto error;
+    }
 
     // Prepare the memory.
     // Well, memset zero.
-    alien_init_memory_prepare();
+    if (alien_init_memory_prepare() != 0) {
+        goto error;
+    }
+
+    return;
+error:
+    alien_init_cleanup();
+    fprintf(stderr, "alien_init: %s\n", strerror(errno));
+    exit(127);
 }
