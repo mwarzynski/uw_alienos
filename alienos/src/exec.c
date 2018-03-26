@@ -30,7 +30,6 @@ void alien_exec() {
     }
 
 	// Parent emulates AlienOS using PTRACE.
-
     registers regs;
     int status;
 
@@ -40,6 +39,9 @@ void alien_exec() {
         perror("invalid child state");
         goto error;
     }
+
+    // Send a SIGKILL signal to the tracee if the tracer exits.
+    ptrace(PTRACE_SETOPTIONS, child, NULL, PTRACE_O_EXITKILL);
 
     if (ptrace(PTRACE_SYSEMU, child, 0, 0) == -1) {
         goto error;
@@ -71,7 +73,6 @@ void alien_exec() {
 
 error:
     fprintf(stderr, "alien_exec: error: %s\n", strerror(errno));
-    kill(child, SIGKILL);
     exit(127);
 }
 

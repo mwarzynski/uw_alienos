@@ -24,8 +24,14 @@ int alien_emulate_getkey(registers *regs) {
 int alien_emulate_print(registers *regs) {
     int x = regs->rdi;
     int y = regs->rsi;
-    uint16_t chars_addr = (uint16_t)regs->rdx;
-    int n = regs->r10;
+    int n = regs->r10 * 2;
+
+    if (n < 0 || 1024*1024 < n) {
+        perror("print: invalid string length");
+        return 1;
+    }
+
+    char *buffer = malloc(sizeof(char) * n);
 
     // returns the number of bytes read
     ssize_t bytes_read = 0;
@@ -33,22 +39,31 @@ int alien_emulate_print(registers *regs) {
 
     struct iovec local_iov, remote_iov;
 
-    while (bytes_read < n) {
-        br = process_vm_readv(child,
-                            const struct iovec *local_iov,
-                            unsigned long liovcnt,
-                            const struct iovec *remote_iov,
-                            unsigned long riovcnt,
-                            unsigned long flags);
-        if (br == -1) {
-            // -1 is returned and errno is set appropriately.
-            alien_exit(127);
-        }
+
+    for (int i = 0; i < n; i++) {
+        buffer[i] = 'A';
     }
 
-    fprintf(stderr, "alien_print: printing on (%d,%d) (%d chars) from %08x\n", x, y, n, regs->rdx);
-    //alien_terminal_goto(x, y);
-    //alien_terminal_show(s, n);
+    local_iov.iov_base = buffer;
+    local_iov.iov_len = n;
+
+    remote_iov.iov_base = (void*)regs->rdx;
+    remote_iov.iov_len = n;
+
+    br = process_vm_readv(child,
+                        &local_iov,
+                        1,
+                        &remote_iov,
+                        1,
+                        0);
+    if (br != n) {
+        fprintf(stderr, "process vm readv: %s\n", strerror(errno));
+        return 1;
+    }
+
+    alien_terminal_goto(x, y);
+    alien_terminal_show(buffer, n);
+
     return 0;
 }
 
@@ -73,8 +88,8 @@ int alien_emulate(registers *regs) {
         case SYSCALL_SETCURSOR:
             return alien_emulate_setcursor(regs);
         default:
-            fprintf(stderr, "alien_emulate: invalid syscall: %d\n", regs->rax);
-            return 1; // invalid syscall
+            perror("alien_emulate: invalid syscall");
+            return 1;
     }
 }
 

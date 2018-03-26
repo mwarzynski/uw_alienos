@@ -5,5 +5,12 @@ void alien_terminal_goto(int x, int y) {
 }
 
 void alien_terminal_show(char *s, int n) {
-    printf("%.*s", n, s);
+    for (int i = 0; i < n; i++) {
+        fprintf(stderr, "%d\n", s[i]);
+    }
+    for (int i = 0; i < n; i++) {
+        if (i % 2 == 0)
+            continue;
+        printf("%c", s[i]);
+    }
 }
