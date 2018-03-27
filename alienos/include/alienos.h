@@ -1,6 +1,8 @@
 #ifndef _ALIENOS_H
 #define _ALIENOS_H 1
 
+#define _GNU_SOURCE
+
 #include <elf.h>
 #include <errno.h>
 #include <stdio.h>
