@@ -31,53 +31,55 @@ struct alien_char {
 
 
 // Alien colors.
-#define COLOR_BLACK 0
-#define COLOR_BLUE 1
-#define COLOR_GREEN 2
-#define COLOR_TURQUOISE 3
-#define COLOR_RED 4
-#define COLOR_PINK 5
-#define COLOR_YELLOW 6
-#define COLOR_GREY_LIGHT 7
-#define COLOR_GREY_DARK 8
-#define COLOR_BRIGHT_BLUE 9
-#define COLOR_BRIGHT_GREEN 10
-#define COLOR_BRIGHT_TURQUOISE 11
-#define COLOR_BRIGHT_RED 12
-#define COLOR_BRIGHT_PINK 13
-#define COLOR_BRIGHT_YELLOW 14
-#define COLOR_WHITE 15
+#define ALIEN_COLOR_BLACK 0
+#define ALIEN_COLOR_BLUE 1
+#define ALIEN_COLOR_GREEN 2
+#define ALIEN_COLOR_TURQUOISE 3
+#define ALIEN_COLOR_RED 4
+#define ALIEN_COLOR_PINK 5
+#define ALIEN_COLOR_YELLOW 6
+#define ALIEN_COLOR_GREY_LIGHT 7
+#define ALIEN_COLOR_GREY_DARK 8
+#define ALIEN_COLOR_BRIGHT_BLUE 9
+#define ALIEN_COLOR_BRIGHT_GREEN 10
+#define ALIEN_COLOR_BRIGHT_TURQUOISE 11
+#define ALIEN_COLOR_BRIGHT_RED 12
+#define ALIEN_COLOR_BRIGHT_PINK 13
+#define ALIEN_COLOR_BRIGHT_YELLOW 14
+#define ALIEN_COLOR_WHITE 15
 
 
 // Key presses representation as numbers.
 // Range for ASCII: 0x20 - 0x7e.
-#define KEY_UP 0x80
-#define KEY_LEFT 0x81
-#define KEY_DOWN 0x82
-#define KEY_RIGHT 0x83
-#define KEY_ENTER 0x0a
+#define ALIEN_KEY_UP 0x80
+#define ALIEN_KEY_LEFT 0x81
+#define ALIEN_KEY_DOWN 0x82
+#define ALIEN_KEY_RIGHT 0x83
+#define ALIEN_KEY_ENTER 0x0a
+#define ALIEN_KEY_ASCII_MIN 0x20
+#define ALIEN_KEY_ASCII_MAX 0x7e
 
 // Syscall hints:
 // The number of the system call is passed in the register rax.
 // The return value from the call is also in the register rax,
 
-#define SYSCALL_END 0
+#define ALIEN_SYSCALL_END 0
 // void noreturn end(int status)
 //                   rdi
 
-#define SYSCALL_GETRAND 1
+#define ALIEN_SYSCALL_GETRAND 1
 // uint32_t getrand()
 //
 
-#define SYSCALL_GETKEY 2
+#define ALIEN_SYSCALL_GETKEY 2
 // int getkey()
 //
 
-#define SYSCALL_PRINT 3
+#define ALIEN_SYSCALL_PRINT 3
 // void print(int x, int y, uint16_t *chars, int n)
 //            rdi  , rsi  , rdx            , r10
 
-#define SYSCALL_SETCURSOR 4
+#define ALIEN_SYSCALL_SETCURSOR 4
 // void setcursor(int x, int y)
 //                rdi  , rsi
 
@@ -88,7 +90,7 @@ struct alien_char {
 // needs (`p_memsz / 4`).
 // Before the program starts, the operating system places parameter values in this segment.
 // If the program does not have such a segment, it means that it does not accept parameters.
-#define PT_PARAMS 0x60031337
+#define ALIEN_PT_PARAMS 0x60031337
 
 
 // Descriptor to emulated program.

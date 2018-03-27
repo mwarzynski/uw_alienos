@@ -125,7 +125,7 @@ int alien_init_params(int argc, char *argv[]) {
 
     // Determine parameters header.
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
-        if (program_headers[i]->p_type == PT_PARAMS) {
+        if (program_headers[i]->p_type == ALIEN_PT_PARAMS) {
             parameters_header = program_headers[i];
             break;
         }

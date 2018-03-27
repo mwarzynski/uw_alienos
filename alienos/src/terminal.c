@@ -19,37 +19,37 @@ int alien_terminal_color(uint8_t c) {
     c &= ~(1UL << 8);
 
     switch (c) {
-        case COLOR_BLACK:
+        case ALIEN_COLOR_BLACK:
             return 30;
-        case COLOR_BLUE:
+        case ALIEN_COLOR_BLUE:
             return 34;
-        case COLOR_GREEN:
+        case ALIEN_COLOR_GREEN:
             return 32;
-        case COLOR_TURQUOISE:
+        case ALIEN_COLOR_TURQUOISE:
             return 36;
-        case COLOR_RED:
+        case ALIEN_COLOR_RED:
             return 31;
-        case COLOR_PINK:
+        case ALIEN_COLOR_PINK:
             return 35;
-        case COLOR_YELLOW:
+        case ALIEN_COLOR_YELLOW:
             return 33;
-        case COLOR_GREY_LIGHT:
+        case ALIEN_COLOR_GREY_LIGHT:
             return 37;
-        case COLOR_GREY_DARK:
+        case ALIEN_COLOR_GREY_DARK:
             return 90;
-        case COLOR_BRIGHT_BLUE:
+        case ALIEN_COLOR_BRIGHT_BLUE:
             return 94;
-        case COLOR_BRIGHT_GREEN:
+        case ALIEN_COLOR_BRIGHT_GREEN:
             return 92;
-        case COLOR_BRIGHT_TURQUOISE:
+        case ALIEN_COLOR_BRIGHT_TURQUOISE:
             return 96;
-        case COLOR_BRIGHT_RED:
+        case ALIEN_COLOR_BRIGHT_RED:
             return 91;
-        case COLOR_BRIGHT_PINK:
+        case ALIEN_COLOR_BRIGHT_PINK:
             return 95;
-        case COLOR_BRIGHT_YELLOW:
+        case ALIEN_COLOR_BRIGHT_YELLOW:
             return 93;
-        case COLOR_WHITE:
+        case ALIEN_COLOR_WHITE:
             return 37;
         default:
             return 39;

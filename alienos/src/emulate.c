@@ -14,13 +14,12 @@ int alien_emulate_getrand(registers *regs) {
 }
 
 int alien_emulate_key_invalid(char c) {
-    fprintf(stderr, "alien_key_isvalid: '%c' (%x)\n", c, c);
-    if (c != KEY_ENTER
-     && c != KEY_UP
-     && c != KEY_DOWN
-     && c != KEY_LEFT
-     && c != KEY_RIGHT
-     && (c < 0x20 || 0x7e < c)) {
+    if (c != ALIEN_KEY_ENTER
+     && c != ALIEN_KEY_UP
+     && c != ALIEN_KEY_DOWN
+     && c != ALIEN_KEY_LEFT
+     && c != ALIEN_KEY_RIGHT
+     && (c < ALIEN_KEY_ASCII_MIN || ALIEN_KEY_ASCII_MAX < c)) {
         return 1;
     }
     return 0;
@@ -36,7 +35,6 @@ int alien_emulate_getkey(registers *regs) {
         break;
     }
 
-    fprintf(stderr, "alien_getkey: providing key: '%c' (%x)\n", c, c);
     regs->rax = c;
     return 0;
 }
@@ -89,15 +87,15 @@ int alien_emulate_setcursor(registers *regs) {
 
 int alien_emulate(registers *regs) {
     switch (regs->orig_rax) {
-        case SYSCALL_END:
+        case ALIEN_SYSCALL_END:
             return alien_emulate_end(regs);
-        case SYSCALL_GETRAND:
+        case ALIEN_SYSCALL_GETRAND:
             return alien_emulate_getrand(regs);
-        case SYSCALL_GETKEY:
+        case ALIEN_SYSCALL_GETKEY:
             return alien_emulate_getkey(regs);
-        case SYSCALL_PRINT:
+        case ALIEN_SYSCALL_PRINT:
             return alien_emulate_print(regs);
-        case SYSCALL_SETCURSOR:
+        case ALIEN_SYSCALL_SETCURSOR:
             return alien_emulate_setcursor(regs);
         default:
             perror("alien_emulate: invalid syscall");
