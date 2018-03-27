@@ -12,5 +12,4 @@ add_executable(emu
     src/emulate.c
     src/exec.c
     src/terminal.c
-    src/signal.c
 )

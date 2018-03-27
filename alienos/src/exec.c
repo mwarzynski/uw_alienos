@@ -1,16 +1,6 @@
 #include "alienos.h"
 
-void alien_disable_io_buffer() {
-    struct termios t;
-	tcgetattr(STDIN_FILENO, &t);
-    t.c_lflag &= (~ICANON & ~ECHO);
-	tcsetattr(STDIN_FILENO,TCSANOW, &t);
-}
-
 void alien_exec() {
-    alien_setup_signal_handler();
-    alien_disable_io_buffer();
-
     child = fork();
     if (child == -1) {
         goto error;
@@ -47,8 +37,7 @@ void alien_exec() {
         goto error;
     }
 
-    printf("child: %d\n", child);
-
+    alien_terminal_init();
     while(waitpid(child, &status, 0) && !WIFEXITED(status)) {
         if (ptrace(PTRACE_GETREGS, child, 0, &regs) == -1) {
             goto error;
@@ -68,7 +57,7 @@ void alien_exec() {
     }
 
     // Code shouldn't escape while.
-    // End syscall is handled at emulator side.
+    // End syscall is handled at emulate.c side.
     perror("child unexpectedly ended");
 
 error:

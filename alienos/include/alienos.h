@@ -29,6 +29,11 @@
 #define KEY_RIGHT 0x83
 #define KEY_ENTER 0x0
 
+struct alien_char {
+    uint8_t c;
+    uint8_t rzeczy;
+} typedef alien_char;
+
 // Syscall hints:
 // The number of the system call is passed in the register rax.
 // The return value from the call is also in the register rax,
@@ -92,17 +97,21 @@ pid_t child;
 typedef struct user_regs_struct registers;
 
 
-// Terminal functions
+// Terminal - functions.
+void alien_terminal_init();
 void alien_terminal_goto(int x, int y);
-void alien_terminal_show(char *s, int n);
+void alien_terminal_show(alien_char *s, int n);
+void alien_terminal_clear();
+// Temrminal - current position of terminal cursor.
+int terminal_x;
+int terminal_y;
 
-void alien_setup_signal_handler();
 
 // Load file and accordingly parse ELF structures.
 // Also, check parameters.
 // If any error occurs, alien_init will return 127.
-void alien_init(int argc, char *argv[]);
-// Clean up the memory.
+int alien_init(int argc, char *argv[]);
+// Clean up the memory (should be called when the process ends).
 void alien_init_cleanup();
 
 // Emulate AlienOS syscalls.

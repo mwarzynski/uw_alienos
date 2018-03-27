@@ -154,7 +154,8 @@ int alien_init_params(int argc, char *argv[]) {
 
 int alien_init_load() {
     Elf64_Phdr *h;
-    Elf64_Addr paddr, offaddr, len;
+    Elf64_Addr paddr, offaddr, eaddr, len;
+    Elf64_Addr setaddr, setlen;
     void *mmap_ret;
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
         h = program_headers[i];
@@ -166,6 +167,7 @@ int alien_init_load() {
         paddr = h->p_paddr & ~0xfff;
         offaddr = h->p_offset & ~0xfff;
         len = (h->p_memsz & ~0xfff) + 0x1000;
+        eaddr = paddr + len;
 
         // Parse prot values.
         int prot = 0;
@@ -182,27 +184,31 @@ int alien_init_load() {
         mmap_ret = mmap(
           (void*)paddr,                // void *addr
                 len,                   // size_t len
-                prot,                  // int prot
+                prot|PROT_WRITE,                  // int prot
                 MAP_FIXED|MAP_PRIVATE, // int flags
                 fileno(fp),            // int fildes
                 offaddr                // off_t off
         );
-
         if (mmap_ret == MAP_FAILED) {
             // errno is set by mmap
             return 1;
         }
+
+        //fprintf(stderr, "mmap  : %08x -> %08x, len: %d\n", paddr, eaddr, len);
+
+        // memset 0
+        setaddr = paddr;
+        setlen = h->p_paddr - paddr;
+        //fprintf(stderr, "memset: %08x -> %08x, len: %d\n", setaddr, h->p_paddr, setlen);
+        if (setlen)
+            memset((void*)setaddr, 0, setlen);
+
+        setaddr = h->p_paddr + h->p_filesz;
+        setlen = eaddr - setaddr;
+        //fprintf(stderr, "memset: %08x -> %08x, len: %d\n", setaddr, eaddr, setlen);
+        if (setlen)
+            memset((void*)setaddr, 0, setlen);
     }
-
-    return 0;
-}
-
-int alien_init_memory_prepare() {
-    // TODO: implement setting unused memory to zero
-    // It's due to mapping with alignment which causes
-    // loading more bytes from file than needed.
-    // Especially, overwriting BSS section might not be
-    // something we want.
 
     return 0;
 }
@@ -211,7 +217,7 @@ void alien_init_cleanup() {
     // TODO: implement cleaning up after initialization
 }
 
-void alien_init(int argc, char *argv[]) {
+int alien_init(int argc, char *argv[]) {
     if (argc < 2) {
         perror("You must specify program to execute");
         goto error;
@@ -247,15 +253,10 @@ void alien_init(int argc, char *argv[]) {
         goto error;
     }
 
-    // Prepare the memory.
-    // Well, memset zero.
-    if (alien_init_memory_prepare() != 0) {
-        goto error;
-    }
-
-    return;
+    return 0;
 error:
     alien_init_cleanup();
+    return 1;
     fprintf(stderr, "alien_init: %s\n", strerror(errno));
     exit(127);
 }

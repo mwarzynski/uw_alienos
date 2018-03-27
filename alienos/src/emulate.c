@@ -7,16 +7,15 @@ int alien_emulate_end(registers *regs) {
 }
 
 int alien_emulate_getrand(registers *regs) {
-    uint32_t rand_number;
-    getrandom(&rand_number, sizeof(uint32_t), GRND_RANDOM);
-    fprintf(stderr, "alien_getrand: providing random number %ld\n", rand_number);
-    regs->rax = rand_number;
+    if (getrandom(&regs->rax, sizeof(uint32_t), GRND_RANDOM) == -1) {
+        return 1;
+    }
     return 0;
 }
 
 int alien_emulate_getkey(registers *regs) {
     char c = getchar();
-    fprintf(stderr, "alien_getkey: providing key: %x\n", c);
+    fprintf(stderr, "alien_getkey: providing key: '%c' (%x)\n", c, c);
     regs->rax = c;
     return 0;
 }
@@ -24,54 +23,49 @@ int alien_emulate_getkey(registers *regs) {
 int alien_emulate_print(registers *regs) {
     int x = regs->rdi;
     int y = regs->rsi;
-    int n = regs->r10 * 2;
+    int n = regs->r10;
+
+    fprintf(stderr, "alien_print: (%d,%d) len: %d\n", x,y,n);
 
     if (n < 0 || 1024*1024 < n) {
         perror("print: invalid string length");
         return 1;
     }
 
-    char *buffer = malloc(sizeof(char) * n);
-
-    // returns the number of bytes read
-    ssize_t bytes_read = 0;
-    ssize_t br;
+    size_t buffer_size = sizeof(alien_char) * n;
+    alien_char *buffer = malloc(buffer_size);
 
     struct iovec local_iov, remote_iov;
-
-
-    for (int i = 0; i < n; i++) {
-        buffer[i] = 'A';
-    }
-
     local_iov.iov_base = buffer;
-    local_iov.iov_len = n;
-
+    local_iov.iov_len = buffer_size;
     remote_iov.iov_base = (void*)regs->rdx;
-    remote_iov.iov_len = n;
+    remote_iov.iov_len = buffer_size;
 
-    br = process_vm_readv(child,
+    ssize_t br = process_vm_readv(child,
                         &local_iov,
                         1,
                         &remote_iov,
                         1,
                         0);
-    if (br != n) {
-        fprintf(stderr, "process vm readv: %s\n", strerror(errno));
+    if (br != buffer_size) {
         return 1;
     }
 
     alien_terminal_goto(x, y);
     alien_terminal_show(buffer, n);
+    alien_terminal_goto(terminal_x, terminal_y);
+
+    free(buffer);
 
     return 0;
 }
 
 int alien_emulate_setcursor(registers *regs) {
-    int x = regs->rdi;
-    int y = regs->rsi;
+    terminal_x = regs->rdi;
+    terminal_y = regs->rsi;
 
-    alien_terminal_goto(x, y);
+    alien_terminal_goto(terminal_x, terminal_y);
+    fprintf(stderr, "alien_setcursor = (%d, %d)\n", terminal_x, terminal_y);
     return 0;
 }
 
