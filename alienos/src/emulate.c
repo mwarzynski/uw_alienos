@@ -58,7 +58,7 @@ int alien_emulate_print(registers *regs) {
     remote_iov.iov_base = (void*)regs->rdx;
     remote_iov.iov_len = buffer_size;
 
-    ssize_t br = process_vm_readv(child,
+    ssize_t br = process_vm_readv(alien_child,
                         &local_iov,
                         1,
                         &remote_iov,

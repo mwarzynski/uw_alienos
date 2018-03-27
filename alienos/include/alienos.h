@@ -116,7 +116,7 @@ Elf64_Phdr *parameters_header;
 
 
 // Child PID.
-pid_t child;
+pid_t alien_child;
 
 // Registers from the child while the syscall stop.
 typedef struct user_regs_struct registers;

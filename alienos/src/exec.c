@@ -1,12 +1,12 @@
 #include "alienos.h"
 
 void alien_exec() {
-    child = fork();
-    if (child == -1) {
+    alien_child = fork();
+    if (alien_child == -1) {
         goto error;
     }
 
-    if (child == 0) {
+    if (alien_child == 0) {
 		// Child executes given program code.
 
         ptrace(PTRACE_TRACEME, 0, NULL, NULL);
@@ -24,22 +24,22 @@ void alien_exec() {
     int status;
 
     // Get kill syscall with SIGSTOP.
-    waitpid(child, &status, 0);
+    waitpid(alien_child, &status, 0);
     if (!WIFSTOPPED(status) || WSTOPSIG(status) != SIGSTOP) {
-        perror("invalid child state");
+        perror("invalid alien_child state");
         goto error;
     }
 
     // Send a SIGKILL signal to the tracee if the tracer exits.
-    ptrace(PTRACE_SETOPTIONS, child, NULL, PTRACE_O_EXITKILL);
+    ptrace(PTRACE_SETOPTIONS, alien_child, NULL, PTRACE_O_EXITKILL);
 
-    if (ptrace(PTRACE_SYSEMU, child, 0, 0) == -1) {
+    if (ptrace(PTRACE_SYSEMU, alien_child, 0, 0) == -1) {
         goto error;
     }
 
     alien_terminal_init();
-    while(waitpid(child, &status, 0) && !WIFEXITED(status)) {
-        if (ptrace(PTRACE_GETREGS, child, 0, &regs) == -1) {
+    while(waitpid(alien_child, &status, 0) && !WIFEXITED(status)) {
+        if (ptrace(PTRACE_GETREGS, alien_child, 0, &regs) == -1) {
             goto error;
         }
 
@@ -47,11 +47,11 @@ void alien_exec() {
             goto error;
         }
 
-        if (ptrace(PTRACE_SETREGS, child, 0, &regs) == -1) {
+        if (ptrace(PTRACE_SETREGS, alien_child, 0, &regs) == -1) {
             goto error;
         }
 
-        if (ptrace(PTRACE_SYSEMU, child, 0, 0) == -1) {
+        if (ptrace(PTRACE_SYSEMU, alien_child, 0, 0) == -1) {
             goto error;
         }
     }
