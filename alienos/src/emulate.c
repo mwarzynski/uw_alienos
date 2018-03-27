@@ -25,9 +25,7 @@ int alien_emulate_print(registers *regs) {
     int y = regs->rsi;
     int n = regs->r10;
 
-    fprintf(stderr, "alien_print: (%d,%d) len: %d\n", x,y,n);
-
-    if (n < 0 || 1024*1024 < n) {
+    if (n < 0 || 80 < n) {
         perror("print: invalid string length");
         return 1;
     }
@@ -56,7 +54,6 @@ int alien_emulate_print(registers *regs) {
     alien_terminal_goto(terminal_x, terminal_y);
 
     free(buffer);
-
     return 0;
 }
 
