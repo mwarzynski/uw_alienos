@@ -13,8 +13,29 @@ int alien_emulate_getrand(registers *regs) {
     return 0;
 }
 
+int alien_emulate_key_invalid(char c) {
+    fprintf(stderr, "alien_key_isvalid: '%c' (%x)\n", c, c);
+    if (c != KEY_ENTER
+     && c != KEY_UP
+     && c != KEY_DOWN
+     && c != KEY_LEFT
+     && c != KEY_RIGHT
+     && (c < 0x20 || 0x7e < c)) {
+        return 1;
+    }
+    return 0;
+}
+
 int alien_emulate_getkey(registers *regs) {
-    char c = getchar();
+    char c = 0x0;
+
+    while ((c = getchar()) != EOF) {
+        if (alien_emulate_key_invalid(c)) {
+            continue;
+        }
+        break;
+    }
+
     fprintf(stderr, "alien_getkey: providing key: '%c' (%x)\n", c, c);
     regs->rax = c;
     return 0;

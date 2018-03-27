@@ -30,7 +30,7 @@ struct alien_char {
 } typedef alien_char;
 
 
-// Colors
+// Alien colors.
 #define COLOR_BLACK 0
 #define COLOR_BLUE 1
 #define COLOR_GREEN 2
