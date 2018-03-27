@@ -23,18 +23,39 @@
 #include <asm/ptrace-abi.h>
 
 
+// Character of aliens.
+struct alien_char {
+    uint8_t c;
+    uint8_t color;
+} typedef alien_char;
+
+
+// Colors
+#define COLOR_BLACK 0
+#define COLOR_BLUE 1
+#define COLOR_GREEN 2
+#define COLOR_TURQUOISE 3
+#define COLOR_RED 4
+#define COLOR_PINK 5
+#define COLOR_YELLOW 6
+#define COLOR_GREY_LIGHT 7
+#define COLOR_GREY_DARK 8
+#define COLOR_BRIGHT_BLUE 9
+#define COLOR_BRIGHT_GREEN 10
+#define COLOR_BRIGHT_TURQUOISE 11
+#define COLOR_BRIGHT_RED 12
+#define COLOR_BRIGHT_PINK 13
+#define COLOR_BRIGHT_YELLOW 14
+#define COLOR_WHITE 15
+
+
 // Key presses representation as numbers.
 // Range for ASCII: 0x20 - 0x7e.
 #define KEY_UP 0x80
 #define KEY_LEFT 0x81
 #define KEY_DOWN 0x82
 #define KEY_RIGHT 0x83
-#define KEY_ENTER 0x0
-
-struct alien_char {
-    uint8_t c;
-    uint8_t rzeczy;
-} typedef alien_char;
+#define KEY_ENTER 0x0a
 
 // Syscall hints:
 // The number of the system call is passed in the register rax.
