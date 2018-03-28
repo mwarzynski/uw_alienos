@@ -3,7 +3,7 @@
 int alien_emulate_end(registers *regs) {
     int status = regs->rdi;
     fprintf(stderr, "alien_end: program ended: %d\n", status);
-    return 1;
+    alien_exit(status);
 }
 
 int alien_emulate_getrand(registers *regs) {
