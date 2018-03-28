@@ -13,7 +13,7 @@ int alien_emulate_getrand(registers *regs) {
     return 0;
 }
 
-int alien_emulate_key_invalid(char c) {
+int alien_emulate_key_invalid(int c) {
     if (c != ALIEN_KEY_ENTER
      && c != ALIEN_KEY_UP
      && c != ALIEN_KEY_DOWN
@@ -25,10 +25,38 @@ int alien_emulate_key_invalid(char c) {
     return 0;
 }
 
+int alien_emulate_key_arrow() {
+    int c;
+    if ((c = getchar()) != 0x5b) {
+        return 0;
+    }
+    c = getchar();
+    switch (c) {
+        case 0x44:
+            c = ALIEN_KEY_LEFT;
+            break;
+        case 0x43:
+            c = ALIEN_KEY_RIGHT;
+            break;
+        case 0x42:
+            c = ALIEN_KEY_DOWN;
+            break;
+        case 0x41:
+            c = ALIEN_KEY_UP;
+            break;
+        default:
+            c = 0x0;
+    }
+    return c;
+}
+
 int alien_emulate_getkey(registers *regs) {
-    char c = 0x0;
+    int c = 0x0;
 
     while ((c = getchar()) != EOF) {
+        if (c == 0x1b) {
+            c = alien_emulate_key_arrow();
+        }
         if (alien_emulate_key_invalid(c)) {
             continue;
         }
