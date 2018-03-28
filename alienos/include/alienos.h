@@ -12,6 +12,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/ptrace.h>
 #include <sys/syscall.h>
@@ -21,6 +22,7 @@
 #include <sys/random.h>
 
 #include <asm/ptrace-abi.h>
+#include <linux/ptrace.h>
 
 
 // Character of aliens.
@@ -58,6 +60,11 @@ struct alien_char {
 #define ALIEN_KEY_ENTER 0x0a
 #define ALIEN_KEY_ASCII_MIN 0x20
 #define ALIEN_KEY_ASCII_MAX 0x7e
+
+// Terminal requirements.
+#define ALIEN_TERMINAL_WIDTH 80
+#define ALIEN_TERMINAL_HEIGHT 23
+
 
 // Syscall hints:
 // The number of the system call is passed in the register rax.
@@ -123,7 +130,7 @@ typedef struct user_regs_struct registers;
 
 
 // Terminal - functions.
-void alien_terminal_init();
+int alien_terminal_init();
 void alien_terminal_goto(int x, int y);
 void alien_terminal_show(alien_char *s, int n);
 void alien_terminal_clear();

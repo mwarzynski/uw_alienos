@@ -37,7 +37,10 @@ void alien_exec() {
         goto error;
     }
 
-    alien_terminal_init();
+    if (alien_terminal_init() != 0) {
+        goto error;
+    }
+
     while(waitpid(alien_child, &status, 0) && !WIFEXITED(status)) {
         if (ptrace(PTRACE_GETREGS, alien_child, 0, &regs) == -1) {
             goto error;
@@ -58,10 +61,9 @@ void alien_exec() {
 
     // Code shouldn't escape while.
     // End syscall is handled at emulate.c side.
-    perror("child unexpectedly ended");
+    fprintf(stderr, "child unexpectedly ended\n");
 
 error:
-    fprintf(stderr, "alien_exec: error: %s\n", strerror(errno));
-    exit(127);
+    alien_exit(127);
 }
 

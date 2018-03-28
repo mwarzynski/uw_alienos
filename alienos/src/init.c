@@ -184,7 +184,7 @@ int alien_init_load() {
         mmap_ret = mmap(
           (void*)paddr,                // void *addr
                 len,                   // size_t len
-                prot|PROT_WRITE,                  // int prot
+                prot|PROT_WRITE,       // int prot
                 MAP_FIXED|MAP_PRIVATE, // int flags
                 fileno(fp),            // int fildes
                 offaddr                // off_t off
@@ -194,20 +194,19 @@ int alien_init_load() {
             return 1;
         }
 
-        //fprintf(stderr, "mmap  : %08x -> %08x, len: %d\n", paddr, eaddr, len);
-
         // memset 0
         setaddr = paddr;
         setlen = h->p_paddr - paddr;
-        //fprintf(stderr, "memset: %08x -> %08x, len: %d\n", setaddr, h->p_paddr, setlen);
-        if (setlen)
+
+        if (setlen) {
             memset((void*)setaddr, 0, setlen);
+        }
 
         setaddr = h->p_paddr + h->p_filesz;
         setlen = eaddr - setaddr;
-        //fprintf(stderr, "memset: %08x -> %08x, len: %d\n", setaddr, eaddr, setlen);
-        if (setlen)
+        if (setlen) {
             memset((void*)setaddr, 0, setlen);
+        }
     }
 
     return 0;
@@ -215,6 +214,7 @@ int alien_init_load() {
 
 void alien_init_cleanup() {
     // TODO: implement cleaning up after initialization
+    free(file);
 }
 
 int alien_init(int argc, char *argv[]) {

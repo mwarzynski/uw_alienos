@@ -1,17 +1,29 @@
 #include "alienos.h"
 
-void alien_terminal_init() {
+int alien_terminal_init() {
     struct termios t;
 	tcgetattr(STDIN_FILENO, &t);
     t.c_lflag &= (~ICANON & ~ECHO);
 	tcsetattr(STDIN_FILENO,TCSANOW, &t);
+
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
+    if (w.ws_col < ALIEN_TERMINAL_WIDTH) {
+        fprintf(stderr, "terminal_init: not sufficient terminal width\n");
+        return 1;
+    }
+    if (w.ws_row < ALIEN_TERMINAL_HEIGHT) {
+        fprintf(stderr, "terminal_init: not sufficient terminal height\n");
+        return 1;
+    }
 
     alien_terminal_clear();
     terminal_x = 0;
     terminal_y = 0;
     alien_terminal_goto(terminal_x, terminal_y);
 
-    fprintf(stderr, "sizeof alien_char: %d\n", sizeof(alien_char));
+    return 0;
 }
 
 int alien_terminal_color(uint8_t c) {
