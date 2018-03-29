@@ -8,7 +8,7 @@ int alien_emulate_end(registers *regs) {
 
 int alien_emulate_getrand(registers *regs) {
     if (getrandom(&regs->rax, sizeof(uint32_t), GRND_RANDOM) == -1) {
-        perror("emulate_getrand: getrandom error");
+        perror("emulate_getrand: getrandom");
         return 1;
     }
     return 0;
@@ -63,6 +63,10 @@ int alien_emulate_getkey(registers *regs) {
         }
         break;
     }
+    if (c == EOF) {
+        fprintf(stderr, "emulate_getkey: got EOF, providing 0x0\n");
+        c = 0x0;
+    }
 
     regs->rax = c;
     return 0;
@@ -95,7 +99,7 @@ int alien_emulate_print(registers *regs) {
                         0);
     if (br != buffer_size) {
         free(buffer);
-        perror("emulate_print: reading memory");
+        perror("emulate_print: reading child memory (process_vm_readv)");
         return 1;
     }
 
@@ -112,7 +116,6 @@ int alien_emulate_setcursor(registers *regs) {
     terminal_y = regs->rsi;
 
     alien_terminal_goto(terminal_x, terminal_y);
-    fprintf(stderr, "emulate_setcursor = (%d, %d)\n", terminal_x, terminal_y);
     return 0;
 }
 
