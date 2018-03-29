@@ -2,6 +2,12 @@
 
 int alien_emulate_end(registers *regs) {
     int status = regs->rdi;
+
+    if (status < ALIEN_END_CODE_MIN || ALIEN_END_CODE_MAX < status) {
+        fprintf(stderr, "emulate_end: invalid end code %d\n");
+        alien_exit(127);
+    }
+
     fprintf(stderr, "emulate_end: program ended: %d\n", status);
     alien_exit(status);
 }

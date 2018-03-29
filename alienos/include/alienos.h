@@ -90,6 +90,9 @@ struct alien_char {
 // void setcursor(int x, int y)
 //                rdi  , rsi
 
+// Define range for alien's exit code.
+#define ALIEN_END_CODE_MIN 0
+#define ALIEN_END_CODE_MAX 63
 
 // PT - segment for parameters passed from the operating system.
 // Parameters are always of type int and are passed in binary form (4 bytes, little-endian).
