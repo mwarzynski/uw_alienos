@@ -19,6 +19,7 @@ int alien_terminal_init() {
     }
 
     alien_terminal_clear();
+
     terminal_x = 0;
     terminal_y = 0;
     alien_terminal_goto(terminal_x, terminal_y);

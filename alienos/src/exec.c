@@ -3,7 +3,7 @@
 int alien_exec() {
     alien_child = fork();
     if (alien_child == -1) {
-        perror("exec: forking");
+        perror("exec: fork");
         return 1;
     }
 
@@ -11,7 +11,7 @@ int alien_exec() {
 		// Child executes given program code.
 
         if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) == -1) {
-            perror("CHILD: ptrace: traceme");
+            perror("CHILD: ptrace traceme");
             exit(1);
         }
 
@@ -32,7 +32,7 @@ int alien_exec() {
     int status;
     waitpid(alien_child, &status, 0);
     if (!WIFSTOPPED(status) || WSTOPSIG(status) != SIGSTOP) {
-        perror("exec: invalid alien_child state");
+        fprintf(stderr, "exec: invalid alien_child state\n");
         return 1;
     }
 

@@ -72,7 +72,7 @@ int alien_init_section_headers() {
 int alien_init_parse_elf() {
     // ELF header - for 64-bit architecture is 64 bytes long.
     if (file_size < 64) {
-        fprintf(stderr, "It's not an ELF file.\n");
+        fprintf(stderr, "init_parse_elf: It's not an ELF file.\n");
         return 1;
     }
 
@@ -80,38 +80,38 @@ int alien_init_parse_elf() {
 
     for (size_t i = 0; i < SELFMAG; i++) {
         if (file[i] != elf_header->e_ident[i]) {
-            fprintf(stderr, "ELF header: invalid magic number.");
+            fprintf(stderr, "init_parse_elf: invalid magic number.");
             return 1;
         }
     }
 
     // ELF header - check architecture.
     if (elf_header->e_type != ELFCLASS64) {
-        fprintf(stderr, "ELF header - not 64-bit format.\n");
+        fprintf(stderr, "init_parse_elf: not 64-bit format.\n");
         return 1;
     }
 
     // ELF header - check file type.
     if (elf_header->e_type != ET_EXEC) {
-        fprintf(stderr, "ELF header - invalid type of file\n");
+        fprintf(stderr, "init_parse_elf: invalid type of file\n");
         return 1;
     }
 
     // ELF header - check endianess.
     if ((elf_header->e_machine >> EI_DATA) != ELFDATA2LSB) {
-        fprintf(stderr, "ELF header - not a little-endian\n");
+        fprintf(stderr, "init_parse_elf: not a little-endian\n");
         return 1;
     }
 
     // ELF header - check architecture.
     if (elf_header->e_machine != EM_X86_64) {
-        fprintf(stderr, "ELF header -invalid architecture\n");
+        fprintf(stderr, "init_parse_elf: invalid architecture\n");
         return 1;
     }
 
     // ELF header - check version.
     if (elf_header->e_version != EV_CURRENT) {
-        fprintf(stderr, "ELF header - invalid version\n");
+        fprintf(stderr, "init_parse_elf: invalid version\n");
         return 1;
     }
 
