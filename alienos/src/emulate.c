@@ -140,15 +140,15 @@ int alien_emulate() {
     }
 
     if (ptrace(PTRACE_SYSEMU, alien_child, 0, 0) == -1) {
-        perror("exec: ptrace sysemu");
+        perror("emulate: ptrace sysemu");
         return 1;
     }
 
     registers regs;
     int status;
-
     while(waitpid(alien_child, &status, 0) && !WIFEXITED(status)) {
         if (ptrace(PTRACE_GETREGS, alien_child, 0, &regs) == -1) {
+            perror("emulate: ptrace getregs");
             goto error;
         }
 
@@ -157,10 +157,12 @@ int alien_emulate() {
         }
 
         if (ptrace(PTRACE_SETREGS, alien_child, 0, &regs) == -1) {
+            perror("emulate: ptrace setregs");
             goto error;
         }
 
         if (ptrace(PTRACE_SYSEMU, alien_child, 0, 0) == -1) {
+            perror("emulate: ptrace sysemu");
             goto error;
         }
     }
@@ -172,3 +174,4 @@ int alien_emulate() {
 error:
     alien_exit(127);
 }
+
