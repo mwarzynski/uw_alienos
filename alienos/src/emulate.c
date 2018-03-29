@@ -2,12 +2,13 @@
 
 int alien_emulate_end(registers *regs) {
     int status = regs->rdi;
-    fprintf(stderr, "alien_end: program ended: %d\n", status);
+    fprintf(stderr, "emulate_end: program ended: %d\n", status);
     alien_exit(status);
 }
 
 int alien_emulate_getrand(registers *regs) {
     if (getrandom(&regs->rax, sizeof(uint32_t), GRND_RANDOM) == -1) {
+        perror("emulate_getrand: getrandom error");
         return 1;
     }
     return 0;
@@ -73,7 +74,7 @@ int alien_emulate_print(registers *regs) {
     int n = regs->r10;
 
     if (n < 0 || 80 < n) {
-        perror("print: invalid string length");
+        fprintf(stderr, "emulate_print: invalid string length.\n");
         return 1;
     }
 
@@ -93,6 +94,8 @@ int alien_emulate_print(registers *regs) {
                         1,
                         0);
     if (br != buffer_size) {
+        free(buffer);
+        perror("emulate_print: reading memory");
         return 1;
     }
 
@@ -109,11 +112,11 @@ int alien_emulate_setcursor(registers *regs) {
     terminal_y = regs->rsi;
 
     alien_terminal_goto(terminal_x, terminal_y);
-    fprintf(stderr, "alien_setcursor = (%d, %d)\n", terminal_x, terminal_y);
+    fprintf(stderr, "emulate_setcursor = (%d, %d)\n", terminal_x, terminal_y);
     return 0;
 }
 
-int alien_emulate(registers *regs) {
+int alien_emulate_syscall(registers *regs) {
     switch (regs->orig_rax) {
         case ALIEN_SYSCALL_END:
             return alien_emulate_end(regs);
@@ -126,8 +129,46 @@ int alien_emulate(registers *regs) {
         case ALIEN_SYSCALL_SETCURSOR:
             return alien_emulate_setcursor(regs);
         default:
-            perror("alien_emulate: invalid syscall");
-            return 1;
+            fprintf(stderr, "emulate_syscall: invalid syscall %x\n", regs->orig_rax);
+            return 0;
     }
 }
 
+int alien_emulate() {
+    if (alien_terminal_init() != 0) {
+        goto error;
+    }
+
+    if (ptrace(PTRACE_SYSEMU, alien_child, 0, 0) == -1) {
+        perror("exec: ptrace sysemu");
+        return 1;
+    }
+
+    registers regs;
+    int status;
+
+    while(waitpid(alien_child, &status, 0) && !WIFEXITED(status)) {
+        if (ptrace(PTRACE_GETREGS, alien_child, 0, &regs) == -1) {
+            goto error;
+        }
+
+        if (alien_emulate_syscall(&regs) != 0) {
+            goto error;
+        }
+
+        if (ptrace(PTRACE_SETREGS, alien_child, 0, &regs) == -1) {
+            goto error;
+        }
+
+        if (ptrace(PTRACE_SYSEMU, alien_child, 0, 0) == -1) {
+            goto error;
+        }
+    }
+
+    // Code shouldn't escape while.
+    // The correct way to end the program is syscall end.
+    fprintf(stderr, "emulate: child unexpectedly died\n");
+
+error:
+    alien_exit(127);
+}

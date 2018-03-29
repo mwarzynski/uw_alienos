@@ -14,11 +14,15 @@ int main(int argc, char *argv[]) {
         goto error;
     }
 
-    // alien_exec executes given program and emulates
+    // alien_exec executes given program
     // the alien operating system.
     // Exec should call the alien_exit directly
     // when syscall end is received.
-    alien_exec();
+    if (alien_exec() != 0) {
+        goto error;
+    }
+
+    alien_emulate();
 
 error:
     alien_exit(127);

@@ -99,6 +99,9 @@ struct alien_char {
 // If the program does not have such a segment, it means that it does not accept parameters.
 #define ALIEN_PT_PARAMS 0x60031337
 
+// Memory allocation allowed range address.
+#define ALIEN_LOAD_ADDR_MIN 0x31337000
+#define ALIEN_LOAD_ADDR_MAX 0x80000000
 
 // Descriptor to emulated program.
 FILE *fp;
@@ -149,11 +152,11 @@ void alien_init_cleanup();
 // Emulate AlienOS syscalls.
 // It modifies registers which later should be set
 // as to allow setting return value.
-int alien_emulate(registers *regs);
+int alien_emulate();
 
 // Execute given program.
 // Also, sets up ptrace.
-void alien_exec();
+int alien_exec();
 
 // Exit the alien program 'gracefully' (SIGKILL).
 void alien_exit(int code);

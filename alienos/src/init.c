@@ -6,31 +6,31 @@ int alien_init_loadfile(char *filename) {
 
     fp = fopen(filename, "rwx");
     if (fp == NULL) {
-        perror("init_loadfile: File descriptor is NULL.");
+        perror("init_loadfile: File descriptor is NULL");
         return 1;
     }
 
     if (fseek(fp, 0L, SEEK_END) != 0) {
-        perror("init_loadfile: Seeking to the end of file error.");
+        perror("init_loadfile: Seeking to the end of file error");
         return 1;
     }
 
     file_size = ftell(fp);
     if (file_size == -1) {
-        perror("init_loadfile: Could not determine file size.");
+        perror("init_loadfile: Could not determine file size");
         return 1;
     }
 
     file = malloc(sizeof(char) * (file_size + 1));
 
     if (fseek(fp, 0L, SEEK_SET) != 0) {
-        perror("init_loadfile: Could not seek to the file beggining.");
+        perror("init_loadfile: Could not seek to the file beggining");
         return 1;
     }
 
     size_t len = fread(file, sizeof(char), file_size, fp);
     if (ferror(fp) != 0 ) {
-        perror("init_loadfile: Error reading file.");
+        perror("init_loadfile: Error reading file");
         return 1;
     }
 
@@ -42,8 +42,7 @@ int alien_init_loadfile(char *filename) {
 int alien_init_program_headers() {
     program_headers = malloc(sizeof(Elf64_Phdr*) * elf_header->e_phnum);
     if (program_headers == NULL) {
-        // malloc failed to allocate memory
-        perror("could not allocate memory");
+        perror("init_program_headers: memory allocation");
         return 1;
     }
 
@@ -58,8 +57,7 @@ int alien_init_program_headers() {
 int alien_init_section_headers() {
     section_headers = malloc(sizeof(Elf64_Shdr*) * elf_header->e_shnum);
     if (section_headers == NULL) {
-        // malloc failed to allocate memory
-        perror("could not allocate memory");
+        perror("init_section_headers: memory allocation");
         return 1;
     }
 
@@ -74,7 +72,7 @@ int alien_init_section_headers() {
 int alien_init_parse_elf() {
     // ELF header - for 64-bit architecture is 64 bytes long.
     if (file_size < 64) {
-        perror("It's not an ELF file.");
+        fprintf(stderr, "It's not an ELF file.\n");
         return 1;
     }
 
@@ -82,38 +80,38 @@ int alien_init_parse_elf() {
 
     for (size_t i = 0; i < SELFMAG; i++) {
         if (file[i] != elf_header->e_ident[i]) {
-            perror("ELF header: invalid magic number.");
+            fprintf(stderr, "ELF header: invalid magic number.");
             return 1;
         }
     }
 
     // ELF header - check architecture.
     if (elf_header->e_type != ELFCLASS64) {
-        perror("ELF header - not 64-bit format.");
+        fprintf(stderr, "ELF header - not 64-bit format.\n");
         return 1;
     }
 
     // ELF header - check file type.
     if (elf_header->e_type != ET_EXEC) {
-        perror("ELF header - invalid type of file");
+        fprintf(stderr, "ELF header - invalid type of file\n");
         return 1;
     }
 
     // ELF header - check endianess.
     if ((elf_header->e_machine >> EI_DATA) != ELFDATA2LSB) {
-        perror("ELF header - not a little-endian");
+        fprintf(stderr, "ELF header - not a little-endian\n");
         return 1;
     }
 
     // ELF header - check architecture.
     if (elf_header->e_machine != EM_X86_64) {
-        perror("ELF header -invalid architecture");
+        fprintf(stderr, "ELF header -invalid architecture\n");
         return 1;
     }
 
     // ELF header - check version.
     if (elf_header->e_version != EV_CURRENT) {
-        perror("ELF header - invalid version");
+        fprintf(stderr, "ELF header - invalid version\n");
         return 1;
     }
 
@@ -138,7 +136,7 @@ int alien_init_params(int argc, char *argv[]) {
     }
 
     if (argc - 2 != paramsn) {
-        perror("Invalid number of params");
+        fprintf(stderr, "init_params: Invalid number of params\n");
         return 1;
     }
 
@@ -162,6 +160,12 @@ int alien_init_load() {
 
         if (h->p_type != PT_LOAD) {
             continue;
+        }
+
+        if (h->p_paddr < ALIEN_LOAD_ADDR_MIN
+         || ALIEN_LOAD_ADDR_MAX < h->p_paddr) {
+            fprintf(stderr, "init_load: tried to allocate memory at invalid range\n");
+            return 1;
         }
 
         paddr = h->p_paddr & ~0xfff;
@@ -194,10 +198,8 @@ int alien_init_load() {
             return 1;
         }
 
-        // memset 0
         setaddr = paddr;
         setlen = h->p_paddr - paddr;
-
         if (setlen) {
             memset((void*)setaddr, 0, setlen);
         }
@@ -206,6 +208,12 @@ int alien_init_load() {
         setlen = eaddr - setaddr;
         if (setlen) {
             memset((void*)setaddr, 0, setlen);
+        }
+
+        // mprotect to set a valid protection
+        if (mprotect((void*)paddr, len, prot) == -1) {
+            fprintf(stderr, "init_load: mprotect error.\n");
+            return 1;
         }
     }
 
@@ -219,44 +227,39 @@ void alien_init_cleanup() {
 
 int alien_init(int argc, char *argv[]) {
     if (argc < 2) {
-        perror("You must specify program to execute");
-        goto error;
+        fprintf(stderr, "init: You must specify program to execute\n");
+        return 1;
     }
 
     // Load file content to memory.
     if (alien_init_loadfile(argv[1]) != 0) {
-        goto error;
+        return 1;
     }
 
     // Parse ELF header file.
     if (alien_init_parse_elf() != 0) {
-        goto error;
+        return 1;
     }
 
     // Parse program headers.
     if (alien_init_program_headers() != 0) {
-        goto error;
+        return 1;
     }
 
     // ELF header - parse section header entries.
     if (alien_init_section_headers() != 0) {
-        goto error;
+        return 1;
     }
 
     // Init sections into virtual memory.
     if (alien_init_load() != 0) {
-        goto error;
+        return 1;
     }
 
     // Initialize parameters in virtual memory.
     if (alien_init_params(argc, argv) != 0) {
-        goto error;
+        return 1;
     }
 
     return 0;
-error:
-    alien_init_cleanup();
-    return 1;
-    fprintf(stderr, "alien_init: %s\n", strerror(errno));
-    exit(127);
 }
