@@ -10,7 +10,7 @@ void alien_init_prepare() {
 int alien_init_loadfile(char *filename) {
     file = NULL;
 
-    fp = fopen(filename, "rwx");
+    fp = fopen(filename, "r");
     if (fp == NULL) {
         perror("init_loadfile: File descriptor is NULL");
         return 1;
@@ -125,7 +125,8 @@ int alien_init_parse_elf() {
 }
 
 int alien_init_params(int argc, char *argv[]) {
-    parameters_header = NULL;
+    // Program header of type PT_PARAMS.
+    Elf64_Phdr *parameters_header = NULL;
 
     // Determine parameters header.
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
@@ -147,6 +148,7 @@ int alien_init_params(int argc, char *argv[]) {
     }
 
     // Check if address of parameter headers is valid.
+    // NOTE: I assume it *must* be inside already loaded memory via PT_LOAD header.
     int found = 0;
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
         if (program_headers[i]->p_type != PT_LOAD) {
@@ -188,7 +190,7 @@ int alien_init_load() {
         }
 
         if (h->p_paddr < ALIEN_LOAD_ADDR_MIN
-         || ALIEN_LOAD_ADDR_MAX < h->p_paddr) {
+         || ALIEN_LOAD_ADDR_MAX < h->p_paddr + h->p_memsz) {
             fprintf(stderr, "init_load: tried to allocate memory at invalid range\n");
             return 1;
         }
@@ -219,7 +221,7 @@ int alien_init_load() {
                 offaddr                // off_t off
         );
         if (mmap_ret == MAP_FAILED) {
-            // errno is set by mmap
+            perror("init_load: mmap");
             return 1;
         }
 

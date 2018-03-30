@@ -7,8 +7,8 @@ int alien_emulate_end(registers *regs) {
         fprintf(stderr, "emulate_end: invalid end code %d\n");
         alien_exit(127);
     }
-
     fprintf(stderr, "emulate_end: program ended: %d\n", status);
+
     alien_exit(status);
 }
 
