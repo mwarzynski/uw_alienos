@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.0.2)
 project (alienos C)
 
 SET(CMAKE_C_FLAGS "-std=c99")
