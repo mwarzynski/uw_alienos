@@ -1,5 +1,11 @@
 #include "alienos.h"
 
+void alien_init_prepare() {
+    fp = NULL;
+    file = NULL;
+    section_headers = NULL;
+    program_headers = NULL;
+}
 
 int alien_init_loadfile(char *filename) {
     file = NULL;
@@ -221,11 +227,25 @@ int alien_init_load() {
 }
 
 void alien_init_cleanup() {
-    // TODO: implement cleaning up after initialization
-    free(file);
+    if (fp != NULL) {
+        fclose(fp);
+    }
+    if (section_headers != NULL) {
+        free(section_headers);
+    }
+    if (program_headers != NULL) {
+        free(program_headers);
+    }
+    if (file != NULL) {
+        free(file);
+    }
 }
 
 int alien_init(int argc, char *argv[]) {
+    // Null global variables as to know later
+    // which should be freed.
+    alien_init_prepare();
+
     if (argc < 2) {
         fprintf(stderr, "init: You must specify program to execute\n");
         return 1;
