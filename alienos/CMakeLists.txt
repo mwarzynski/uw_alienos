@@ -1,5 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
-project (alienos)
+project (alienos C)
+
+SET(CMAKE_C_FLAGS "-std=c99")
 
 # Add the include folder to the search path for header files
 # so that we will find alienos.h
