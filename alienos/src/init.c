@@ -117,10 +117,15 @@ int alien_init_params(int argc, char *argv[]) {
     Elf64_Phdr *parameters_header = NULL;
 
     // Determine parameters header.
+    int found = 0;
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
         if (program_headers[i]->p_type == ALIEN_PT_PARAMS) {
             parameters_header = program_headers[i];
-            break;
+            if (found) {
+                fprintf(stderr, "init_params: loading > 1 params section is not supported\n");
+                continue;
+            }
+            found = 1;
         }
     }
 
@@ -137,7 +142,7 @@ int alien_init_params(int argc, char *argv[]) {
 
     // Check if address of parameter headers is valid.
     // NOTE: I assume it *must* be inside already loaded memory via PT_LOAD header.
-    int found = 0;
+    found = 0;
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
         if (program_headers[i]->p_type != PT_LOAD) {
             continue;
