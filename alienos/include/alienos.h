@@ -150,7 +150,7 @@ int terminal_y;
 // If any error occurs, alien_init will return 127.
 int alien_init(int argc, char *argv[]);
 // Clean up the memory (should be called when the process ends).
-void alien_init_cleanup();
+int alien_init_cleanup();
 
 // Emulate AlienOS syscalls.
 // It modifies registers which later should be set

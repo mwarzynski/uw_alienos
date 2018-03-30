@@ -3,7 +3,9 @@
 void alien_exit(int code) {
     // clean up the memory allocated while
     // initialization process
-    alien_init_cleanup();
+    if (alien_init_cleanup() != 0) {
+        exit(127);
+    }
 
     exit(code);
 }

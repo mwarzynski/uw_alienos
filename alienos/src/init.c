@@ -146,6 +146,25 @@ int alien_init_params(int argc, char *argv[]) {
         return 1;
     }
 
+    // Check if address of parameter headers is valid.
+    int found = 0;
+    for (size_t i = 0; i < elf_header->e_phnum; i++) {
+        if (program_headers[i]->p_type != PT_LOAD) {
+            continue;
+        }
+        if (program_headers[i]->p_paddr <= parameters_header->p_paddr) {
+            Elf32_Word max_memsz = program_headers[i]->p_memsz;
+            max_memsz -= (parameters_header->p_paddr - program_headers[i]->p_paddr);
+            if (parameters_header->p_memsz <= max_memsz) {
+                found = 1;
+            }
+        }
+    }
+    if (!found) {
+        fprintf(stderr, "init_params: there is no place to load parameters\n");
+        return 1;
+    }
+
     // Fill parameters into the block.
     int *param;
     for (Elf64_Xword i = 0; i < paramsn; i++) {
@@ -226,9 +245,13 @@ int alien_init_load() {
     return 0;
 }
 
-void alien_init_cleanup() {
+int alien_init_cleanup() {
+    int ok = 0;
     if (fp != NULL) {
-        fclose(fp);
+        if (fclose(fp) != 0) {
+            ok = 1;
+            perror("init_cleanup: closing file descriptor");
+        }
     }
     if (section_headers != NULL) {
         free(section_headers);
@@ -239,6 +262,7 @@ void alien_init_cleanup() {
     if (file != NULL) {
         free(file);
     }
+    return ok;
 }
 
 int alien_init(int argc, char *argv[]) {
