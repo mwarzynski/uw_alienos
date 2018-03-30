@@ -19,11 +19,13 @@
 #include <sys/wait.h>
 #include <sys/uio.h>
 #include <sys/user.h>
-#include <sys/random.h>
 
 #include <asm/ptrace-abi.h>
+
 #include <linux/ptrace.h>
 
+
+#define SYS_getrandom 318
 
 // Character of aliens.
 struct alien_char {

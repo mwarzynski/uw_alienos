@@ -12,9 +12,9 @@ int alien_emulate_end(registers *regs) {
 }
 
 int alien_emulate_getrand(registers *regs) {
-    if (getrandom(&regs->rax, sizeof(uint32_t), 0) == -1) {
-        perror("emulate_getrand: getrandom");
-        return 1;
+    if (syscall(SYS_getrandom, &regs->rax, sizeof(uint32_t), 0) == -1) {
+         perror("emulate_getrand: getrandom");
+         return 1;
     }
     return 0;
 }
