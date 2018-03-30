@@ -29,13 +29,6 @@ After the alien program finishes running, the emu program should end with the sa
 
 The loader should check correctness of the input data to a reasonable degree. In particular, it should be remembered that a crashed alien ship is not a trusted source of code – you must ensure that the code of the emulated program can not do anything except using known system calls (eg writing / reading arbitrary files). If an error is detected by the emu program, the program should end with the exit code 127.
 
-## Scoring
-
-You can get up to 10 points for the task. The score is a sum of two parts:
-
- - the result of testing (from 0 to 10 points)
- - code assessment (from 0 to -10 points)
-
 ## Hints
 
 Based on the documentation found on the spacecraft, our team of extraterrestrial linguistics found that the example program is probably controlled by the arrow keys, space bar, and enter. It takes one parameter whose sensible values are in the range of 50-400. It requires a terminal size of at least 80×24.
