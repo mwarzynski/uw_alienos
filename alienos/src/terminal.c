@@ -28,9 +28,7 @@ int alien_terminal_init() {
 }
 
 int alien_terminal_color(uint8_t c) {
-    c &= ~(1UL << 7);
-    c &= ~(1UL << 8);
-
+    c &= 0x0f;
     switch (c) {
         case ALIEN_COLOR_BLACK:
             return 30;
