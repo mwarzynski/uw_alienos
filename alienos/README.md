@@ -1,5 +1,9 @@
 # Alien OS
 
+Screenshot of emulated saper (console version) game:
+
+![Saper in the emulated AlienOS](screenshots/saper.jpg)
+
 ## Alien spaceship
 
 Recently, an alien spaceship has crashed near the faculty. We managed to extract data carriers containing programs for the very technically advanced AlienOS operating system, but unfortunately no alien computer system survived – so we are not able to run their programs. However, after many months of reverse engineering, we finally managed to find out how the interfaces between the AlienOS kernel and user programs work.
