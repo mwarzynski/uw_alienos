@@ -120,10 +120,6 @@ Elf64_Ehdr *elf_header;
 Elf64_Phdr **program_headers;
 // len: elf_header->e_phnum
 
-// Pointers to section headers.
-Elf64_Shdr **section_headers;
-// len: elf_header->e_shnum
-
 
 // Child PID.
 pid_t alien_child;

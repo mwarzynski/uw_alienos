@@ -4,10 +4,16 @@ int alien_terminal_init() {
     struct termios t;
 	tcgetattr(STDIN_FILENO, &t);
     t.c_lflag &= (~ICANON & ~ECHO);
-	tcsetattr(STDIN_FILENO,TCSANOW, &t);
+	if (tcsetattr(STDIN_FILENO,TCSANOW, &t) == -1) {
+        perror("terminal_init: setting terminal flags (tcsetattr)");
+        return 1;
+    }
 
     struct winsize w;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1) {
+        perror("terminal_init: getting terminal size (ioctl)");
+        return 1;
+    }
 
     if (w.ws_col < ALIEN_TERMINAL_WIDTH) {
         fprintf(stderr, "terminal_init: not sufficient terminal width\n");
@@ -63,6 +69,7 @@ int alien_terminal_color(uint8_t c) {
         case ALIEN_COLOR_WHITE:
             return 37;
         default:
+            fprintf(stderr, "terminal_color: got invalid color %d\n", c);
             return 39;
     }
 }

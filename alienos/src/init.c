@@ -3,7 +3,6 @@
 void alien_init_prepare() {
     fp = NULL;
     file = NULL;
-    section_headers = NULL;
     program_headers = NULL;
 }
 
@@ -12,31 +11,35 @@ int alien_init_loadfile(char *filename) {
 
     fp = fopen(filename, "r");
     if (fp == NULL) {
-        perror("init_loadfile: File descriptor is NULL");
+        perror("init_loadfile: file descriptor is NULL");
         return 1;
     }
 
     if (fseek(fp, 0L, SEEK_END) != 0) {
-        perror("init_loadfile: Seeking to the end of file error");
+        perror("init_loadfile: seeking to the end of file error");
         return 1;
     }
 
     file_size = ftell(fp);
     if (file_size == -1) {
-        perror("init_loadfile: Could not determine file size");
+        perror("init_loadfile: determining file size");
         return 1;
     }
 
     file = malloc(sizeof(char) * (file_size + 1));
+    if (file == NULL) {
+        perror("init_loadfile: allocating memory to load file");
+        return 1;
+    }
 
     if (fseek(fp, 0L, SEEK_SET) != 0) {
-        perror("init_loadfile: Could not seek to the file beggining");
+        perror("init_loadfile: seeking to the beginning of the file");
         return 1;
     }
 
     size_t len = fread(file, sizeof(char), file_size, fp);
     if (ferror(fp) != 0 ) {
-        perror("init_loadfile: Error reading file");
+        perror("init_loadfile: reading file");
         return 1;
     }
 
@@ -48,7 +51,7 @@ int alien_init_loadfile(char *filename) {
 int alien_init_program_headers() {
     program_headers = malloc(sizeof(Elf64_Phdr*) * elf_header->e_phnum);
     if (program_headers == NULL) {
-        perror("init_program_headers: memory allocation");
+        perror("init_program_headers: allocating memory for program headers");
         return 1;
     }
 
@@ -60,25 +63,10 @@ int alien_init_program_headers() {
     return 0;
 }
 
-int alien_init_section_headers() {
-    section_headers = malloc(sizeof(Elf64_Shdr*) * elf_header->e_shnum);
-    if (section_headers == NULL) {
-        perror("init_section_headers: memory allocation");
-        return 1;
-    }
-
-    Elf64_Off offset = elf_header->e_shoff;
-    for (size_t i = 0; i < elf_header->e_shnum; i++) {
-        section_headers[i] = (Elf64_Shdr*)(file + offset + i*(elf_header->e_shentsize));
-    }
-
-    return 0;
-}
-
 int alien_init_parse_elf() {
     // ELF header - for 64-bit architecture is 64 bytes long.
     if (file_size < 64) {
-        fprintf(stderr, "init_parse_elf: It's not an ELF file.\n");
+        fprintf(stderr, "init_parse_elf: it's not an ELF file (size is too small)\n");
         return 1;
     }
 
@@ -86,14 +74,14 @@ int alien_init_parse_elf() {
 
     for (size_t i = 0; i < SELFMAG; i++) {
         if (file[i] != elf_header->e_ident[i]) {
-            fprintf(stderr, "init_parse_elf: invalid magic number.");
+            fprintf(stderr, "init_parse_elf: magic is invalid\n");
             return 1;
         }
     }
 
     // ELF header - check architecture.
     if (elf_header->e_type != ELFCLASS64) {
-        fprintf(stderr, "init_parse_elf: not 64-bit format.\n");
+        fprintf(stderr, "init_parse_elf: not 64-bit format\n");
         return 1;
     }
 
@@ -237,9 +225,9 @@ int alien_init_load() {
             memset((void*)setaddr, 0, setlen);
         }
 
-        // mprotect to set a valid protection
+        // set a valid protection memory protection
         if (mprotect((void*)paddr, len, prot) == -1) {
-            fprintf(stderr, "init_load: mprotect error.\n");
+            perror("init_load: mprotect");
             return 1;
         }
     }
@@ -255,9 +243,6 @@ int alien_init_cleanup() {
             perror("init_cleanup: closing file descriptor");
         }
     }
-    if (section_headers != NULL) {
-        free(section_headers);
-    }
     if (program_headers != NULL) {
         free(program_headers);
     }
@@ -268,10 +253,10 @@ int alien_init_cleanup() {
 }
 
 int alien_init(int argc, char *argv[]) {
-    // Null global variables as to know later
-    // which should be freed.
+    // Null global variables as to know later which should be freed.
     alien_init_prepare();
 
+    // Check if there is a program to be executed.
     if (argc < 2) {
         fprintf(stderr, "init: You must specify program to execute\n");
         return 1;
@@ -289,11 +274,6 @@ int alien_init(int argc, char *argv[]) {
 
     // Parse program headers.
     if (alien_init_program_headers() != 0) {
-        return 1;
-    }
-
-    // ELF header - parse section header entries.
-    if (alien_init_section_headers() != 0) {
         return 1;
     }
 

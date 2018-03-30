@@ -11,13 +11,13 @@ int alien_exec() {
 		// Child executes given program code.
 
         if (ptrace(PTRACE_TRACEME, 0, NULL, NULL) == -1) {
-            perror("CHILD: ptrace traceme");
+            perror("CHILD::exec: ptrace traceme");
             exit(1);
         }
 
         // Wait for the parent to start tracing.
         if (kill(getpid(), SIGSTOP) == 1) {
-            fprintf(stderr, "CHILD: kill: can't stop myself\n");
+            fprintf(stderr, "CHILD::exec: kill(myself, SIGSTOP) error\n");
             exit(1);
         }
 
@@ -38,7 +38,7 @@ int alien_exec() {
 
     // Send a SIGKILL signal to the tracee if the tracer exits.
     if (ptrace(PTRACE_SETOPTIONS, alien_child, NULL, PTRACE_O_EXITKILL) == -1) {
-        perror("exec: setoptions exitkill");
+        perror("exec: ptrace setoptions exitkill");
         return 1;
     }
 
