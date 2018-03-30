@@ -13,7 +13,7 @@ int alien_emulate_end(registers *regs) {
 }
 
 int alien_emulate_getrand(registers *regs) {
-    if (getrandom(&regs->rax, sizeof(uint32_t), GRND_RANDOM) == -1) {
+    if (getrandom(&regs->rax, sizeof(uint32_t), 0) == -1) {
         perror("emulate_getrand: getrandom");
         return 1;
     }
