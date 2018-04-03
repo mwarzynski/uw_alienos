@@ -84,7 +84,14 @@ int alien_emulate_print(registers *regs) {
 
     if (n < 0) {
         fprintf(stderr, "emulate_print: negative string length.\n");
-        return 1;
+        return 0;
+    }
+
+    if (n > ALIEN_TERMINAL_WIDTH_MIN) {
+        fprintf(stderr, "emulate_print: too much characters to print,"
+                " maximum characters to print %d, got %d",
+                ALIEN_TERMINAL_WIDTH_MIN, n);
+        n = ALIEN_TERMINAL_WIDTH_MIN;
     }
 
     struct winsize w;
