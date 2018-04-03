@@ -82,8 +82,8 @@ int alien_emulate_print(registers *regs) {
     int y = regs->rsi;
     int n = regs->r10;
 
-    if (n < 0 || 80 < n) {
-        fprintf(stderr, "emulate_print: invalid string length.\n");
+    if (n < 0) {
+        fprintf(stderr, "emulate_print: negative string length.\n");
         return 1;
     }
 
