@@ -106,6 +106,11 @@ struct alien_char {
 #define ALIEN_LOAD_ADDR_MIN 0x31337000
 #define ALIEN_LOAD_ADDR_MAX 0x80000000
 
+// Terminal - alien size
+#define ALIEN_TERMINAL_WIDTH_MIN 80
+#define ALIEN_TERMINAL_HEIGHT_MIN 24
+
+
 // Descriptor to emulated program.
 FILE *fp;
 // Pointer to the beginning of loaded file.

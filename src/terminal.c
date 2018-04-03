@@ -31,9 +31,10 @@ int alien_terminal_init() {
 
     struct winsize w;
     if (alien_terminal_getsize(&w) == 0) {
-        if (w.ws_col < 24 || w.ws_row < 80) {
-            fprintf(stderr, "terminal_init: your terminal is too small\n");
-            fprintf(stderr, "terminal_init: aliens use 80x24 terminals\n");
+        if (w.ws_col < ALIEN_TERMINAL_WIDTH_MIN
+         || w.ws_row < ALIEN_TERMINAL_HEIGHT_MIN) {
+            fprintf(stderr, "terminal_init: your terminal is too small,"
+                            "aliens use 80x24 terminals\n");
         }
     }
 
