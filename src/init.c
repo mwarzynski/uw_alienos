@@ -226,13 +226,13 @@ int alien_init_load() {
 
         setaddr = paddr;
         setlen = h->p_paddr - paddr;
-        if (setlen) {
+        if (setlen >= 0) {
             memset((void*)setaddr, 0, setlen);
         }
 
         setaddr = h->p_paddr + h->p_filesz;
         setlen = eaddr - setaddr;
-        if (setlen) {
+        if (setlen >= 0) {
             memset((void*)setaddr, 0, setlen);
         }
 
