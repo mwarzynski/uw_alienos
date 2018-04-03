@@ -150,8 +150,17 @@ int alien_emulate_print(registers *regs) {
 }
 
 int alien_emulate_setcursor(registers *regs) {
-    terminal_x = regs->rdi;
-    terminal_y = regs->rsi;
+    int x = regs->rdi;
+    int y = regs->rsi;
+
+    if (x < 0 || y < 0) {
+        fprintf(stderr, "emulate_setcursor: coordinates are invalid"
+                " (%d, %d)", x, y);
+        return 0;
+    }
+
+    terminal_x = x;
+    terminal_y = y;
 
     alien_terminal_goto(terminal_x, terminal_y);
     return 0;
