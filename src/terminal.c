@@ -41,7 +41,7 @@ int alien_terminal_init() {
         if (w.ws_col < ALIEN_TERMINAL_WIDTH_MIN
          || w.ws_row < ALIEN_TERMINAL_HEIGHT_MIN) {
             fprintf(stderr, "terminal_init: your terminal is too small,"
-                            "aliens use 80x24 terminals\n");
+                            " aliens use 80x24 terminals\n");
         }
     }
 

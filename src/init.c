@@ -68,7 +68,7 @@ int alien_init_parse_elf() {
     // ELF header - for 64-bit architecture is 64 bytes long.
     if (file_size < 64) {
         fprintf(stderr, "init_parse_elf: it's not an ELF file"
-                        "(size is too small)\n");
+                        " (size is too small)\n");
         return 1;
     }
 
@@ -114,7 +114,7 @@ int alien_init_parse_elf() {
     if (elf_header->e_entry < ALIEN_LOAD_ADDR_MIN
      || ALIEN_LOAD_ADDR_MAX < elf_header->e_entry) {
         fprintf(stderr, "init_parse_elf: invalid entrypoint"
-                "(not in valid range)\n");
+                " (not in valid range)\n");
         return 1;
     }
 
@@ -132,7 +132,7 @@ int alien_init_params(int argc, char *argv[]) {
             parameters_header = program_headers[i];
             if (found) {
                 fprintf(stderr, "init_params: loading > 1 params section"
-                        "is not supported\n");
+                        " is not supported\n");
                 continue;
             }
             found = 1;
@@ -147,7 +147,7 @@ int alien_init_params(int argc, char *argv[]) {
 
     if (argc - 2 != paramsn) {
         fprintf(stderr, "init_params: Invalid number of params,"
-                "want: %d\n", paramsn);
+                " want: %d\n", paramsn);
         return 1;
     }
 
@@ -197,7 +197,7 @@ int alien_init_load() {
         if (h->p_paddr < ALIEN_LOAD_ADDR_MIN
          || ALIEN_LOAD_ADDR_MAX < h->p_paddr + h->p_memsz) {
             fprintf(stderr, "init_load: tried to allocate memory"
-                    "at invalid range\n");
+                    " at invalid range\n");
             return 1;
         }
 

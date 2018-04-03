@@ -102,14 +102,14 @@ int alien_emulate_print(registers *regs) {
     // check terminal's height
     if (w.ws_row < y) {
         fprintf(stderr, "emulate_print: terminal's height is not enough"
-                "(want at least %d rows)\n", y);
+                " (want at least %d rows)\n", y);
         return 0;
     }
 
     // check terminal's width
     if (w.ws_col < x + n) {
         fprintf(stderr, "emulate_print: terminal's width is not enough"
-                "(want %d columns)\n", x + n);
+                " (want %d columns)\n", x + n);
         n = w.ws_col - x;
     }
     if (n <= 0) {
@@ -180,7 +180,7 @@ int alien_emulate_syscall(registers *regs) {
             return alien_emulate_setcursor(regs);
         default:
             fprintf(stderr, "emulate_syscall: invalid syscall number"
-                    "%ld\n", regs->orig_rax);
+                    " %ld\n", regs->orig_rax);
             return 0;
     }
 }
