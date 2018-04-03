@@ -146,7 +146,8 @@ int alien_init_params(int argc, char *argv[]) {
     }
 
     if (argc - 2 != paramsn) {
-        fprintf(stderr, "init_params: Invalid number of params\n");
+        fprintf(stderr, "init_params: Invalid number of params,"
+                "want: %d\n", paramsn);
         return 1;
     }
 
