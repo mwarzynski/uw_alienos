@@ -5,6 +5,8 @@ void alien_exit(int code) {
     if (alien_init_cleanup() != 0) {
         exit(127);
     }
+    // clean up terminal
+    alien_terminal_clear();
 
     exit(code);
 }
