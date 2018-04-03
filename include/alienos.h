@@ -142,8 +142,6 @@ void alien_terminal_cleanup();
 // Temrminal - current position of terminal cursor.
 int terminal_x;
 int terminal_y;
-// Terminal - termios
-struct termios terminal_termios;
 
 // Load file and accordingly parse ELF structures.
 // Also, check parameters.

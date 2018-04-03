@@ -1,5 +1,6 @@
 #include "alienos.h"
 
+struct termios *terminal_termios = NULL;
 
 void alien_terminal_clear() {
     printf("\033[2J");
@@ -14,9 +15,15 @@ int alien_terminal_getsize(struct winsize *w) {
 }
 
 int alien_terminal_init() {
-	tcgetattr(STDIN_FILENO, &terminal_termios);
+    terminal_termios = malloc(sizeof(struct termios));
+    if (terminal_termios == NULL) {
+        perror("terminal_init: malloc");
+        return 1;
+    }
 
-    struct termios t = terminal_termios;
+    tcgetattr(STDIN_FILENO, terminal_termios);
+
+    struct termios t = *terminal_termios;
     t.c_lflag &= (~ICANON & ~ECHO);
 	if (tcsetattr(STDIN_FILENO,TCSANOW, &t) == -1) {
         perror("terminal_init: setting terminal flags (tcsetattr)");
@@ -42,11 +49,13 @@ int alien_terminal_init() {
 }
 
 void alien_terminal_cleanup() {
-	if (tcsetattr(STDIN_FILENO,TCSANOW, &terminal_termios) == -1) {
+    if (terminal_termios == NULL) {
+        return;
+    }
+	if (tcsetattr(STDIN_FILENO,TCSANOW, terminal_termios) == -1) {
         perror("terminal_cleanup: setting previous terminal flags");
         return;
     }
-    alien_terminal_clear();
 }
 
 int alien_terminal_color(uint8_t c) {
