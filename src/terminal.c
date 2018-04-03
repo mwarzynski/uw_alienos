@@ -9,27 +9,20 @@ int alien_terminal_init() {
         return 1;
     }
 
-    struct winsize w;
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == -1) {
-        perror("terminal_init: getting terminal size (ioctl)");
-        return 1;
-    }
-
-    if (w.ws_col < ALIEN_TERMINAL_WIDTH) {
-        fprintf(stderr, "terminal_init: not sufficient terminal width\n");
-        return 1;
-    }
-    if (w.ws_row < ALIEN_TERMINAL_HEIGHT) {
-        fprintf(stderr, "terminal_init: not sufficient terminal height\n");
-        return 1;
-    }
-
     alien_terminal_clear();
 
     terminal_x = 0;
     terminal_y = 0;
     alien_terminal_goto(terminal_x, terminal_y);
 
+    return 0;
+}
+
+int alien_terminal_getsize(struct winsize *w) {
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, w) == -1) {
+        perror("terminal_init: getting terminal size (ioctl)");
+        return 1;
+    }
     return 0;
 }
 

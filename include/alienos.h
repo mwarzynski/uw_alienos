@@ -63,10 +63,6 @@ struct alien_char {
 #define ALIEN_KEY_ASCII_MIN 0x20
 #define ALIEN_KEY_ASCII_MAX 0x7e
 
-// Terminal requirements.
-#define ALIEN_TERMINAL_WIDTH 80
-#define ALIEN_TERMINAL_HEIGHT 23
-
 
 // Syscall hints:
 // The number of the system call is passed in the register rax.
@@ -135,6 +131,7 @@ int alien_terminal_init();
 void alien_terminal_goto(int x, int y);
 void alien_terminal_show(alien_char *s, int n);
 void alien_terminal_clear();
+int alien_terminal_getsize(struct winsize *w);
 // Temrminal - current position of terminal cursor.
 int terminal_x;
 int terminal_y;

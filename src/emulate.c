@@ -87,6 +87,26 @@ int alien_emulate_print(registers *regs) {
         return 1;
     }
 
+    struct winsize w;
+    if (alien_terminal_getsize(&w) != 0) {
+        return 1;
+    }
+
+    // check terminal's height
+    if (w.ws_row < y) {
+        fprintf(stderr, "emulate_print: terminal's height is not enough (want at least %d rows)\n", y);
+        return 0;
+    }
+
+    // check terminal's width
+    if (w.ws_col < x + n) {
+        fprintf(stderr, "emulate_print: terminal's width is not enough (want %d columns)\n", x + n);
+        n = w.ws_col - x;
+    }
+    if (n <= 0) {
+        return 0;
+    }
+
     size_t buffer_size = sizeof(alien_char) * n;
     alien_char *buffer = malloc(buffer_size);
     if (buffer == NULL) {
