@@ -109,6 +109,12 @@ int alien_init_parse_elf() {
         return 1;
     }
 
+    if (elf_header->e_entry < ALIEN_LOAD_ADDR_MIN
+     || ALIEN_LOAD_ADDR_MAX < elf_header->e_entry) {
+        fprintf(stderr, "init_parse_elf: invalid entrypoint (not in valid range)\n");
+        return 1;
+    }
+
     return 0;
 }
 
