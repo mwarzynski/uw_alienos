@@ -5,6 +5,14 @@ void alien_terminal_clear() {
     printf("\033[2J");
 }
 
+int alien_terminal_getsize(struct winsize *w) {
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, w) == -1) {
+        perror("terminal_init: getting terminal size (ioctl)");
+        return 1;
+    }
+    return 0;
+}
+
 int alien_terminal_init() {
 	tcgetattr(STDIN_FILENO, &terminal_termios);
 
@@ -21,6 +29,14 @@ int alien_terminal_init() {
     terminal_y = 0;
     alien_terminal_goto(terminal_x, terminal_y);
 
+    struct winsize w;
+    if (alien_terminal_getsize(&w) == 0) {
+        if (w.ws_col < 24 || w.ws_row < 80) {
+            fprintf(stderr, "terminal_init: your terminal is too small\n");
+            fprintf(stderr, "terminal_init: aliens use 80x24 terminals\n");
+        }
+    }
+
     return 0;
 }
 
@@ -30,14 +46,6 @@ void alien_terminal_cleanup() {
         return;
     }
     alien_terminal_clear();
-}
-
-int alien_terminal_getsize(struct winsize *w) {
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, w) == -1) {
-        perror("terminal_init: getting terminal size (ioctl)");
-        return 1;
-    }
-    return 0;
 }
 
 int alien_terminal_color(uint8_t c) {

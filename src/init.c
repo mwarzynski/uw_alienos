@@ -56,8 +56,9 @@ int alien_init_program_headers() {
     }
 
     Elf64_Off offset = elf_header->e_phoff;
+    Elf64_Half size = elf_header->e_phentsize;
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
-        program_headers[i] = (Elf64_Phdr*)(file + offset + i*(elf_header->e_phentsize));
+        program_headers[i] = (Elf64_Phdr*)(file + offset + i*size);
     }
 
     return 0;
@@ -66,7 +67,8 @@ int alien_init_program_headers() {
 int alien_init_parse_elf() {
     // ELF header - for 64-bit architecture is 64 bytes long.
     if (file_size < 64) {
-        fprintf(stderr, "init_parse_elf: it's not an ELF file (size is too small)\n");
+        fprintf(stderr, "init_parse_elf: it's not an ELF file"
+                        "(size is too small)\n");
         return 1;
     }
 
@@ -111,7 +113,8 @@ int alien_init_parse_elf() {
 
     if (elf_header->e_entry < ALIEN_LOAD_ADDR_MIN
      || ALIEN_LOAD_ADDR_MAX < elf_header->e_entry) {
-        fprintf(stderr, "init_parse_elf: invalid entrypoint (not in valid range)\n");
+        fprintf(stderr, "init_parse_elf: invalid entrypoint"
+                "(not in valid range)\n");
         return 1;
     }
 
@@ -128,7 +131,8 @@ int alien_init_params(int argc, char *argv[]) {
         if (program_headers[i]->p_type == ALIEN_PT_PARAMS) {
             parameters_header = program_headers[i];
             if (found) {
-                fprintf(stderr, "init_params: loading > 1 params section is not supported\n");
+                fprintf(stderr, "init_params: loading > 1 params section"
+                        "is not supported\n");
                 continue;
             }
             found = 1;
@@ -147,18 +151,19 @@ int alien_init_params(int argc, char *argv[]) {
     }
 
     // Check if address of parameter headers is valid.
-    // NOTE: I assume it *must* be inside already loaded memory via PT_LOAD header.
+    // NOTE: I assume params must be inside loaded memory via PT_LOAD header.
     found = 0;
     for (size_t i = 0; i < elf_header->e_phnum; i++) {
         if (program_headers[i]->p_type != PT_LOAD) {
             continue;
         }
-        if (program_headers[i]->p_paddr <= parameters_header->p_paddr) {
-            Elf32_Word max_memsz = program_headers[i]->p_memsz;
-            max_memsz -= (parameters_header->p_paddr - program_headers[i]->p_paddr);
-            if (parameters_header->p_memsz <= max_memsz) {
-                found = 1;
-            }
+        if (program_headers[i]->p_paddr > parameters_header->p_paddr) {
+            continue;
+        }
+        Elf32_Word max_memsz = program_headers[i]->p_memsz;
+        max_memsz -= (parameters_header->p_paddr - program_headers[i]->p_paddr);
+        if (parameters_header->p_memsz <= max_memsz) {
+            found = 1;
         }
     }
     if (!found) {
@@ -190,7 +195,8 @@ int alien_init_load() {
 
         if (h->p_paddr < ALIEN_LOAD_ADDR_MIN
          || ALIEN_LOAD_ADDR_MAX < h->p_paddr + h->p_memsz) {
-            fprintf(stderr, "init_load: tried to allocate memory at invalid range\n");
+            fprintf(stderr, "init_load: tried to allocate memory"
+                    "at invalid range\n");
             return 1;
         }
 

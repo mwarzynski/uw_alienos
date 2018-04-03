@@ -22,5 +22,7 @@ przekierowanie stderr do pliku aby nie zakłócać pokazywanych treści.
 
 W przypadku, gdy emulator wykryje zbyt mały rozmiar terminala aby wyświetlić
 treści przekazywane przez syscall print, zostanie wysłany komunikat na stderr,
-a treść której nie da się wyświetlić zostanie obcięta.
+a treść której nie da się wyświetlić zostanie obcięta. Zatem, w szczególności
+gdy wymiary terminala są mniejsze od terminali obcych, można wyświetlać części
+treści.
 
