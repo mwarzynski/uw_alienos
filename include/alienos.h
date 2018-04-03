@@ -130,12 +130,13 @@ typedef struct user_regs_struct registers;
 int alien_terminal_init();
 void alien_terminal_goto(int x, int y);
 void alien_terminal_show(alien_char *s, int n);
-void alien_terminal_clear();
 int alien_terminal_getsize(struct winsize *w);
+void alien_terminal_cleanup();
 // Temrminal - current position of terminal cursor.
 int terminal_x;
 int terminal_y;
-
+// Terminal - termios
+struct termios terminal_termios;
 
 // Load file and accordingly parse ELF structures.
 // Also, check parameters.

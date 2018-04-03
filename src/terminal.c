@@ -1,8 +1,14 @@
 #include "alienos.h"
 
+
+void alien_terminal_clear() {
+    printf("\033[2J");
+}
+
 int alien_terminal_init() {
-    struct termios t;
-	tcgetattr(STDIN_FILENO, &t);
+	tcgetattr(STDIN_FILENO, &terminal_termios);
+
+    struct termios t = terminal_termios;
     t.c_lflag &= (~ICANON & ~ECHO);
 	if (tcsetattr(STDIN_FILENO,TCSANOW, &t) == -1) {
         perror("terminal_init: setting terminal flags (tcsetattr)");
@@ -16,6 +22,14 @@ int alien_terminal_init() {
     alien_terminal_goto(terminal_x, terminal_y);
 
     return 0;
+}
+
+void alien_terminal_cleanup() {
+	if (tcsetattr(STDIN_FILENO,TCSANOW, &terminal_termios) == -1) {
+        perror("terminal_cleanup: setting previous terminal flags");
+        return;
+    }
+    alien_terminal_clear();
 }
 
 int alien_terminal_getsize(struct winsize *w) {
@@ -65,10 +79,6 @@ int alien_terminal_color(uint8_t c) {
             fprintf(stderr, "terminal_color: got invalid color %d\n", c);
             return 39;
     }
-}
-
-void alien_terminal_clear() {
-    printf("\033[2J");
 }
 
 void alien_terminal_goto(int x, int y) {
