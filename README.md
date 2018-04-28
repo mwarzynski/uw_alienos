@@ -1,8 +1,8 @@
 # Alien OS
 
-Screenshot of emulated saper (console version) game:
+Screenshot of emulated minesweeper (console version) game:
 
-![Saper in the emulated AlienOS](screenshots/saper.jpg)
+![Minesweeper in the emulated AlienOS](screenshots/saper.jpg)
 
 ## Alien spaceship
 
